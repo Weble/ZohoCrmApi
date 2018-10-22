@@ -6,6 +6,8 @@ use Doctrine\Common\Inflector\Inflector;
 
 trait ProvidesModules
 {
+
+
     /**
      * Proxy any module call to the right api call
      * @param $name

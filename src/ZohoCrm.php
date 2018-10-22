@@ -4,7 +4,9 @@ namespace Webleit\ZohoCrmApi;
 
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Http\Message\UriInterface;
+use Webleit\ZohoCrmApi\Exception\NonExistingModule;
 use Webleit\ZohoCrmApi\Mixins\ProvidesModules;
+use Webleit\ZohoCrmApi\Models\Settings\Module;
 use Webleit\ZohoCrmApi\Modules;
 
 /**
@@ -12,6 +14,8 @@ use Webleit\ZohoCrmApi\Modules;
  * @package Webleit\ZohoCrmApi
  * @property-read Modules\Settings $settings
  * @property-read Modules\Users $users
+ * @property-read Modules\Org $org
+ * @property-read Modules\Records $record
  */
 class ZohoCrm implements \Webleit\ZohoCrmApi\Contracts\ProvidesModules
 {
@@ -47,7 +51,14 @@ class ZohoCrm implements \Webleit\ZohoCrmApi\Contracts\ProvidesModules
     protected $availableModules = [
         'settings' => Modules\Settings::class,
         'users' => Modules\Users::class,
+        'org' => Modules\Org::class,
+        'records' => Modules\Records::class
     ];
+
+    /**
+     * @var array
+     */
+    protected $apiModules = [];
 
     /**
      * ZohoSign constructor.
@@ -55,7 +66,7 @@ class ZohoCrm implements \Webleit\ZohoCrmApi\Contracts\ProvidesModules
      * @param $clientSecret
      * @param string $refreshToken
      */
-    public function __construct($clientId, $clientSecret, $refreshToken = '')
+    public function __construct ($clientId, $clientSecret, $refreshToken = '')
     {
         $this->client = new Client($clientId, $clientSecret, $refreshToken);
     }
@@ -90,7 +101,7 @@ class ZohoCrm implements \Webleit\ZohoCrmApi\Contracts\ProvidesModules
     /**
      * @return $this
      */
-    public function euRegion()
+    public function euRegion ()
     {
         $this->client->euRegion();
         return $this;
@@ -99,7 +110,7 @@ class ZohoCrm implements \Webleit\ZohoCrmApi\Contracts\ProvidesModules
     /**
      * @return $this
      */
-    public function usRegion()
+    public function usRegion ()
     {
         $this->client->usRegion();
         return $this;
@@ -108,7 +119,7 @@ class ZohoCrm implements \Webleit\ZohoCrmApi\Contracts\ProvidesModules
     /**
      * @return $this
      */
-    public function cnRegion()
+    public function cnRegion ()
     {
         $this->client->cnRegion();
         return $this;
@@ -126,7 +137,7 @@ class ZohoCrm implements \Webleit\ZohoCrmApi\Contracts\ProvidesModules
      * @param $code
      * @return $this
      */
-    public function setGrantCode($code)
+    public function setGrantCode ($code)
     {
         $this->client->setGrantCode($code);
         return $this;
@@ -136,7 +147,7 @@ class ZohoCrm implements \Webleit\ZohoCrmApi\Contracts\ProvidesModules
      * @param $token
      * @return $this
      */
-    public function setRefreshToken($token)
+    public function setRefreshToken ($token)
     {
         $this->client->setRefreshToken($token);
         return $this;
@@ -146,20 +157,48 @@ class ZohoCrm implements \Webleit\ZohoCrmApi\Contracts\ProvidesModules
      * @param CacheItemPoolInterface $cache
      * @return $this
      */
-    public function useCache(CacheItemPoolInterface $cache)
+    public function useCache (CacheItemPoolInterface $cache)
     {
         $this->client->useCache($cache);
         return $this;
     }
 
     /**
-     * Proxy any module call to the right api call
      * @param $name
-     * @return Modules\Module
+     * @return mixed|Modules\Records
+     * @throws Exception\ApiError
+     * @throws Exception\GrantCodeNotSetException
+     * @throws NonExistingModule
      */
-    public function __get($name)
+    public function __get ($name)
     {
-        return $this->createModule($name);
+        $module = $this->createModule($name);
+
+        if ($module) {
+            return $module;
+        }
+
+        $modules = $this->getApiModules();
+        if (in_array($name, array_keys($modules))) {
+            /** @var Modules\Records $recordsModule */
+            return new Modules\Records($this->getClient(), $name);
+        }
+    }
+
+    /**
+     * @return array|static
+     * @throws Exception\ApiError
+     * @throws Exception\GrantCodeNotSetException
+     */
+    public function getApiModules ()
+    {
+        if (!$this->apiModules) {
+            $this->apiModules = $this->settings->modules->getList()->mapWithKeys(function(Module $module){
+                return [strtolower($module->module_name) => $module->module_name];
+            })->toArray();
+        }
+
+        return $this->apiModules;
     }
 
     /**
@@ -175,7 +214,7 @@ class ZohoCrm implements \Webleit\ZohoCrmApi\Contracts\ProvidesModules
      * @param UriInterface $uri
      * @return null|string
      */
-    public static function parseGrantTokenFromUrl(UriInterface $uri)
+    public static function parseGrantTokenFromUrl (UriInterface $uri)
     {
         return Client::parseGrantTokenFromUrl($uri);
     }

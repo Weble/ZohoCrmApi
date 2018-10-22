@@ -2,12 +2,14 @@
 
 namespace Webleit\ZohoCrmApi;
 
+use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Psr7\Response;
 use Psr\Cache;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface;
 use Webleit\ZohoCrmApi\Exception\ApiError;
 use Webleit\ZohoCrmApi\Exception\GrantCodeNotSetException;
+use Webleit\ZohoCrmApi\Exception\NonExistingModule;
 
 /**
  * Class Client
@@ -300,13 +302,36 @@ class Client
 
         $data = array_merge($data, $extraData);
 
-        return $this->client->$method($this->getUrl() . $uri, [
-            'query' => $query,
-            'form_params' => $data,
-            'headers' => [
-                'Authorization' => 'Zoho-oauthtoken ' . $this->getAccessToken()
-            ]
-        ]);
+        try {
+            return $this->client->$method($this->getUrl() . $uri, [
+                'query' => $query,
+                'form_params' => $data,
+                'headers' => [
+                    'Authorization' => 'Zoho-oauthtoken ' . $this->getAccessToken()
+                ]
+            ]);
+        } catch (ClientException $e) {
+            $response = $e->getResponse();
+
+            if (!$response) {
+                throw $e;
+            }
+
+            $response = json_decode($response->getBody());
+            if (!$response) {
+                throw $e;
+            }
+
+            if (!isset($response->code)) {
+                throw $e;
+            }
+
+            if (in_array($response->code,['INVALID_MODULE', 'INVALID_URL_PATTERN'])) {
+                throw new NonExistingModule($response->message);
+            }
+
+            throw $e;
+        }
     }
 
     /**

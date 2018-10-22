@@ -4,6 +4,7 @@ namespace Webleit\ZohoCrmApi\Test;
 
 use PHPUnit\Framework\TestCase;
 use Webleit\ZohoCrmApi\Client;
+use Webleit\ZohoCrmApi\Exception\NonExistingModule;
 use Webleit\ZohoCrmApi\Models\Request;
 use Webleit\ZohoCrmApi\Models\Settings\Layout;
 use Webleit\ZohoCrmApi\Models\Settings\Module;
@@ -134,6 +135,24 @@ class ApiTest extends TestCase
     public function canGetListOfUsers()
     {
         $this->assertGreaterThan(0, self::$zoho->users->getList()->count());
+    }
+
+    /**
+     * @test
+     */
+    public function canGetListOfCoreModuleRecords()
+    {
+        $modules = self::$zoho->getApiModules();
+
+        // Unreachable modules
+
+        foreach ($modules as $module => $moduleName) {
+            try {
+                $this->assertGreaterThanOrEqual(0, self::$zoho->$module->getList()->count());
+            } catch (NonExistingModule $e) {
+
+            }
+        }
     }
 
     /**
