@@ -2,8 +2,8 @@
     "name": "webleit/zohocrmapi",
     "description": "Zoho CRM API - PHP SDK",
     "license": "MIT",
-    "keywords": ["zoho", "sign", "zohosign", "api"],
-    "version": "1.0.0",
+    "keywords": ["zoho", "crm", "zohocrm", "api"],
+    "version": "1.0.1",
     "authors": [
         {
             "name": "Daniele Rosario",
