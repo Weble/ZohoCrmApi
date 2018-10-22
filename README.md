@@ -1,12 +1,12 @@
-# Zoho Sign API - PHP SDK
+# Zoho CRM API - PHP SDK
 
-This Library is a SDK in PHP that simplifies the usage of the Zoho Sign Api version 1 ([https://www.zoho.com/sign/api/](https://www.zoho.com/sign/api/))
+This Library is a SDK in PHP that simplifies the usage of the Zoho CRM Api version 2 ([https://www.zoho.com/crm/help/api/v2](https://www.zoho.com/crm/help/api/v2))
 It provides both an interface to ease the interaction with the APIs without bothering with the actual REST request, while packaging the various responses using very simple Model classes that can be then uses with any other library or framework.
 
 ## Installation 
 
 ```
-composer require webleit/zohosignapi
+composer require webleit/zohocrmapi
 ```
 
 In order to use the library, just require the composer autoload file, and then fire up the library itself.
@@ -14,22 +14,22 @@ In order for the library to work, you need to be authenticated with the zoho sig
 
 ```php
 require './vendor/autoload.php';
-$zohoSign = new ZohoSign('[CLIENT_ID]', '[CLIENT_SECRET]', '[REFRESH_TOKEN]');
+$zohoSign = new \Webleit\ZohoCrmApi\ZohoCrm('[CLIENT_ID]', '[CLIENT_SECRET]', '[REFRESH_TOKEN]');
 ```
 
 ## Authentication
 
-Zoho Sign Api use oAuth2 as the authentication method, as described [here](https://www.zoho.com/sign/api/).
+Zoho CRM Api use oAuth2 as the authentication method, as described [here](https://www.zoho.com/crm/help/api/v2/#OAuth2_0).
 In order to authenticate the library, you can use two different methods:
 
 
 #### 1. Refresh Token
 
 If you want to, you can skip steps 1-7 and directly use Step 8, but you need to generate the refresh token yourself 
-manually, using the instruction provided by zoho: [https://www.zoho.com/sign/api/#getting-started](https://www.zoho.com/sign/api/#getting-started)
+manually, using the instruction provided by zoho: [https://www.zoho.com/crm/help/api/v2/#oauth-request](https://www.zoho.com/crm/help/api/v2/#oauth-request)
 
 ```php
-$zohoSign = new ZohoSign('[CLIENT_ID]', '[CLIENT_SECRET]', '[REFRESH_TOKEN]');
+$zoho = new ZohoCrm('[CLIENT_ID]', '[CLIENT_SECRET]', '[REFRESH_TOKEN]');
 ```
 
 
@@ -39,12 +39,12 @@ This is the best way, even if it requires more work.
 1. Go to [https://accounts.zoho.com/developerconsole] (https://accounts.zoho.com/developerconsole)
 2. Create a Client Id. **Remember the redirect url you set, you will need it**
 3. Use the library to create a Grant token Url, and create a page (probably for the web application administrator?) 
-that redirects to the given url, to allow the user to authenticate with his zoho sign credentials.
+that redirects to the given url, to allow the user to authenticate with his zoho crm credentials.
     ```php
-    use \Webleit\ZohoSignApi\ZohoSign;
+    use \Webleit\ZohoCrmApi\ZohoCrm;
     
-    $zohoSign = new ZohoSign('[CLIENT_ID]', '[CLIENT_SECRET]');
-    $redirectUrl = $zohoSign->getGrantCodeConsentUrl('[YOUR_REDIRECT_URI]');
+    $zoho = new ZohoCrm('[CLIENT_ID]', '[CLIENT_SECRET]');
+    $redirectUrl = $zoho->getGrantCodeConsentUrl('[YOUR_REDIRECT_URI]');
     
     // Redirect your user here to $redirectUrl
     ``` 
@@ -53,7 +53,7 @@ that redirects to the given url, to allow the user to authenticate with his zoho
 
     ```php
     ...
-      $grantToken = \Webleit\ZohoSignApi\ZohoSign::parseGrantTokenFromUrl($fullUri);
+      $grantToken = \Webleit\ZohoCrmApi\ZohoCrm::parseGrantTokenFromUrl($fullUri);
       
       // or, alternatively, $grantToken = $_GET['code'];
     ...
@@ -62,8 +62,8 @@ that redirects to the given url, to allow the user to authenticate with his zoho
 6. Give the Grant Code to the library
     
     ```php
-    $zohoSign = new ZohoSign('[CLIENT_ID]', '[CLIENT_SECRET]');
-    $zohoSign->setGrantCode($grantToken);
+    $zoho = new ZohoCrm('[CLIENT_ID]', '[CLIENT_SECRET]');
+    $zoho->setGrantCode($grantToken);
 
     ```
     
@@ -76,7 +76,7 @@ that redirects to the given url, to allow the user to authenticate with his zoho
 8. From now on, use the refresh Token to create the library instance
 
     ```php
-    $zohoSign = new ZohoSign('[CLIENT_ID]', '[CLIENT_SECRET]', $refreshToken);
+    $zoho = new ZohoCrm('[CLIENT_ID]', '[CLIENT_SECRET]', $refreshToken);
     ```
     
 ## Usage
@@ -87,8 +87,8 @@ You can get the list of supported apis using the getAvailableModules() method
 #### Example
 
 ```php
-$zohoSign = new ZohoSign('[CLIENT_ID]', '[CLIENT_SECRET]', '[REFRESH_TOKEN]');
-$requests = $zohoSign->requests->getList();
+$zoho = new ZohoCrm('[CLIENT_ID]', '[CLIENT_SECRET]', '[REFRESH_TOKEN]');
+$requests = $zoho->users->getList();
 ```
 
 ## Return Types
