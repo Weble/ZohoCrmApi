@@ -229,7 +229,7 @@ class Client
     /**
      * @return string
      */
-    public function getOAuthApiUrl()
+    public function getOAuthApiUrl ()
     {
         switch ($this->dc) {
             case self::DC_CN:
@@ -248,7 +248,7 @@ class Client
     /**
      * @return string
      */
-    public function getOAuthGrantUrl()
+    public function getOAuthGrantUrl ()
     {
         switch ($this->dc) {
             case self::DC_CN:
@@ -287,29 +287,25 @@ class Client
     /**
      * @param $uri
      * @param $method
-     * @param $query
-     * @param $data
-     * @param array $extraData
-     * @return Response
+     * @param array $data
+     * @return mixed
      * @throws ApiError
      * @throws GrantCodeNotSetException
+     * @throws NonExistingModule
      */
-    public function call ($uri, $method, $query = [], $data = [], $extraData = [])
+    public function call ($uri, $method, $data = [])
     {
-        $data = [
-
-        ];
-
-        $data = array_merge($data, $extraData);
+        $options = array_merge([
+            'query' => [],
+            'form_params' => [],
+            'json' => [],
+            'headers' => [
+                'Authorization' => 'Zoho-oauthtoken ' . $this->getAccessToken()
+            ]
+        ], $data);
 
         try {
-            return $this->client->$method($this->getUrl() . $uri, [
-                'query' => $query,
-                'form_params' => $data,
-                'headers' => [
-                    'Authorization' => 'Zoho-oauthtoken ' . $this->getAccessToken()
-                ]
-            ]);
+            return $this->client->$method($this->getUrl() . $uri, $options);
         } catch (ClientException $e) {
             $response = $e->getResponse();
 
@@ -326,7 +322,7 @@ class Client
                 throw $e;
             }
 
-            if (in_array($response->code,['INVALID_MODULE', 'INVALID_URL_PATTERN'])) {
+            if (in_array($response->code, ['INVALID_MODULE', 'INVALID_URL_PATTERN'])) {
                 throw new NonExistingModule($response->message);
             }
 
@@ -350,11 +346,11 @@ class Client
     {
         $pageContext = $this->getPageContext($start, $limit, $orderBy, $orderDir, $search);
 
-        $params = array_merge($params,  [
+        $params = array_merge($params, [
             'data' => json_encode($pageContext)
         ]);
 
-        $response = $this->call($uri, 'GET', $params);
+        $response = $this->call($uri, 'GET', ['query' => $params]);
 
         $body = $response->getBody();
 
@@ -378,7 +374,26 @@ class Client
         }
 
         return $this->processResult(
-            $this->call($url, 'GET', $params)
+            $this->call($url, 'GET', ['query' => $params])
+        );
+    }
+
+    /**
+     * @param $url
+     * @param array $params
+     * @param array $queryParams
+     * @return array|mixed|string
+     * @throws ApiError
+     * @throws GrantCodeNotSetException
+     * @throws NonExistingModule
+     */
+    public function post ($url, $params = [], $queryParams = [])
+    {
+        return $this->processResult(
+            $this->call($url, 'POST', [
+                'query' => $queryParams,
+                'json' => $params
+            ])
         );
     }
 

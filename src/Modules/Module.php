@@ -19,6 +19,10 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
      */
     const RESPONSE_OPTION_PAGINATION_ONLY = 2;
 
+    const TRIGGER_WORKFLOW = 'workflow';
+    const TRIGGER_BLUEPRINT = 'blueprint';
+    const TRIGGER_APPROVAL = 'approval';
+
     /**
      * @var Client
      */
@@ -83,17 +87,49 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
     }
 
     /**
-     * Creates a new record for this module
-     * @param array $data
+     * @param $data
      * @param array $params
+     * @param array $triggers
      * @return Model
+     * @throws GrantCodeNotSetException
+     * @throws \Webleit\ZohoCrmApi\Exception\ApiError
+     * @throws \Webleit\ZohoCrmApi\Exception\NonExistingModule
      */
-    public function create($data, $params = [])
+    public function create($data, $params = [], $triggers = [self::TRIGGER_APPROVAL, self::TRIGGER_WORKFLOW, self::TRIGGER_BLUEPRINT])
     {
-        $data = $this->client->post($this->getUrl(), null, $data, $params);
-        $data = $data[Inflector::singularize($this->getResourceKey())];
+        return $this->createMany([$data], $params, $triggers)->first();
+    }
 
-        return $this->make($data);
+    /**
+     * @param $data
+     * @param array $params
+     * @param array $triggers
+     * @return Collection
+     * @throws GrantCodeNotSetException
+     * @throws \Webleit\ZohoCrmApi\Exception\ApiError
+     * @throws \Webleit\ZohoCrmApi\Exception\NonExistingModule
+     */
+    public function createMany($data, $params = [], $triggers = [self::TRIGGER_APPROVAL, self::TRIGGER_WORKFLOW, self::TRIGGER_BLUEPRINT])
+    {
+        $data = [
+            'data' => $data,
+            'triggers' => $triggers
+        ];
+
+        $data = $this->client->post($this->getUrl(), $data, $params);
+        $data = $data['data'];
+
+        $results = [];
+        foreach ($data as $row) {
+            $item = null;
+            if ($row['code'] == 'SUCCESS') {
+                $item = $this->make($row['details']);
+            }
+
+            $results[] = $item;
+        }
+
+        return collect($results);
     }
 
     /**
