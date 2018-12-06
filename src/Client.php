@@ -34,9 +34,9 @@ class Client
     const ZOHOCRM_API_URL_DEVELOPER_EU = "https://developer.zoho.eu/crm/v2/";
     const ZOHOCRM_API_URL_DEVELOPER_CN = "https://developer.zoho.cn/crm/v2/";
 
-    const ZOHOCRM_API_URL_SANDBOX_US = "https://sandbox.zoho.com/crm/v2/";
-    const ZOHOCRM_API_URL_SANDBOX_EU = "https://sandbox.zoho.eu/crm/v2/";
-    const ZOHOCRM_API_URL_SANDBOX_CN = "https://sandbox.zoho.cn/crm/v2/";
+    const ZOHOCRM_API_URL_SANDBOX_US = "https://crmsandbox.zoho.com/crm/v2/";
+    const ZOHOCRM_API_URL_SANDBOX_EU = "https://crmsandbox.zoho.eu/crm/v2/";
+    const ZOHOCRM_API_URL_SANDBOX_CN = "https://crmsandbox.zoho.cn/crm/v2/";
 
     const MODE_PRODUCTION = 'production';
     const MODE_DEVELOPER = 'developer';
