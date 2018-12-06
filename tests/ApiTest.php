@@ -61,7 +61,7 @@ class ApiTest extends TestCase
     /**
      * @test
      */
-    public function canCanListOfModules ()
+    public function canGetListOfModules ()
     {
         $this->assertGreaterThan(0, self::$zoho->settings->modules->getList()->count());
     }

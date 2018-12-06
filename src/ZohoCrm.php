@@ -4,6 +4,7 @@ namespace Webleit\ZohoCrmApi;
 
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Http\Message\UriInterface;
+use Tightenco\Collect\Support\Collection;
 use Webleit\ZohoCrmApi\Exception\NonExistingModule;
 use Webleit\ZohoCrmApi\Mixins\ProvidesModules;
 use Webleit\ZohoCrmApi\Models\Settings\Module;
@@ -179,14 +180,14 @@ class ZohoCrm implements \Webleit\ZohoCrmApi\Contracts\ProvidesModules
         }
 
         $modules = $this->getApiModules();
-        if (in_array($name, array_keys($modules))) {
+        if ($modules->has($name)) {
             /** @var Modules\Records $recordsModule */
             return new Modules\Records($this->getClient(), $name);
         }
     }
 
     /**
-     * @return array|static
+     * @return Collection
      * @throws Exception\ApiError
      * @throws Exception\GrantCodeNotSetException
      */
@@ -194,8 +195,8 @@ class ZohoCrm implements \Webleit\ZohoCrmApi\Contracts\ProvidesModules
     {
         if (!$this->apiModules) {
             $this->apiModules = $this->settings->modules->getList()->mapWithKeys(function(Module $module){
-                return [strtolower($module->module_name) => $module->module_name];
-            })->toArray();
+                return [strtolower($module->module_name) => $module];
+            });
         }
 
         return $this->apiModules;

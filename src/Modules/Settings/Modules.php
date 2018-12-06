@@ -2,6 +2,7 @@
 
 namespace Webleit\ZohoCrmApi\Modules\Settings;
 
+use Webleit\ZohoCrmApi\Exception\NonExistingModule;
 use Webleit\ZohoCrmApi\Modules\Module;
 
 /**
@@ -59,9 +60,13 @@ class Modules extends Module
         }
 
         $fieldsModule = new Fields($this->getClient());
-        return $fieldsModule->getList([
-            'module' => $module
-        ]);
+        try {
+            return $fieldsModule->getList([
+                'module' => $module
+            ]);
+        } catch (NonExistingModule $e) {
+            return collect([]);
+        }
     }
 
     /**
