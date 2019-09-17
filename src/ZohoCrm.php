@@ -43,7 +43,7 @@ class ZohoCrm implements \Webleit\ZohoCrmApi\Contracts\ProvidesModules
     /**
      * @var string
      */
-    protected $modulesNamespace = '\\Webleit\\ZohoSignApi\\Modules\\';
+    protected $modulesNamespace = '\\Webleit\\ZohoCrmApi\\Modules\\';
 
     /**
      * List of available Zoho Sign Api endpoints (see https://www.zoho.com/sign/api)
