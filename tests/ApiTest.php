@@ -179,17 +179,38 @@ class ApiTest extends TestCase
     /**
      * @test
      */
+    public function canUpdateLead ()
+    {
+        /** @var Records $leadModule */
+        $leadModule = self::$zoho->leads;
+        /** @var \Webleit\ZohoCrmApi\Models\Record $lead */
+        $lead = self::$zoho->leads->getList()->first();
+
+        $response = $leadModule->update($lead->getId(), [
+            'Company' => 'Beta',
+        ]);
+
+        $this->assertNotEmpty($response->getId());
+
+        $lead = self::$zoho->leads->get($response->getId());
+
+        $this->assertEquals('Beta', $lead->Company);
+    }
+
+    /**
+     * @test
+     */
     public function canCreateLeads ()
     {
         $data = [[
             'Company' => 'Alpha ltd',
             'Last_Name' => 'Doe',
             'First_Name' => 'John'
-            ],[
+        ], [
             'Company' => 'Alpha ltd',
             'Last_Name' => 'Doe',
             'First_Name' => 'John'
-            ], [
+        ], [
             'Company' => 'Beta ltd',
             'Last_Name' => 'Doe',
             'First_Name' => 'John'
@@ -219,7 +240,7 @@ class ApiTest extends TestCase
             'Company' => 'Alpha ltd',
             'Last_Name' => 'Doe',
             'First_Name' => 'John'
-        ],[
+        ], [
             'Company' => 'Alpha ltd',
             'First_Name' => 'John' // This one misses last name, and will fail
         ], [
@@ -289,6 +310,41 @@ class ApiTest extends TestCase
         $user = $users->first();
         $this->assertEquals($user->getId(), self::$zoho->settings->profiles->get($user->getId())->getId());
     }
+
+    /**
+     * @test
+     */
+    public function canCreateSalesOrder ()
+    {
+        /** @var Records $module */
+        $module = new Records(self::$client, 'Sales_Orders');
+
+        /** @var Records $module */
+        $productsModule = new Records(self::$client, 'Products');
+        $product = $productsModule->create([
+            'Product_Name' => 'Test'
+        ]);
+
+        $response = $module->create([
+            'Subject' => '123',
+            'Product_Details' => [
+                [
+                    'product' => $product->getId(),
+                    'Unit_Price' => 10,
+                    'quantity' => 2
+                ]
+            ]
+        ]);
+
+        dd($response);
+
+        $this->assertNotEmpty($response->getId());
+
+        $order = $module->get($response->getId());
+
+        $this->assertEquals('123', $order->Subject);
+    }
+
 
     /**
      * @test

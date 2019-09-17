@@ -2,14 +2,18 @@
 
 namespace Webleit\ZohoCrmApi;
 
+use BenTools\GuzzleHttp\Middleware\Storage\Adapter\ArrayAdapter;
+use BenTools\GuzzleHttp\Middleware\ThrottleConfiguration;
+use BenTools\GuzzleHttp\Middleware\ThrottleMiddleware;
 use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\HandlerStack;
 use Psr\Cache;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface;
 use Webleit\ZohoCrmApi\Exception\ApiError;
 use Webleit\ZohoCrmApi\Exception\GrantCodeNotSetException;
 use Webleit\ZohoCrmApi\Exception\NonExistingModule;
+use Webleit\ZohoCrmApi\Request\RequestMatcher;
 
 /**
  * Class Client
@@ -45,6 +49,11 @@ class Client
     const DC_US = 'com';
     const DC_EU = 'eu';
     const DC_CN = 'cn';
+
+    /**
+     * @var bool
+     */
+    protected $throttle = false;
 
     /**
      * @var \GuzzleHttp\Client
@@ -93,6 +102,7 @@ class Client
 
     /**
      * Client constructor.
+     *
      * @param $clientId
      * @param $clientSecret
      * @param $grantCode
@@ -107,6 +117,44 @@ class Client
         if ($refreshToken) {
             $this->setRefreshToken($refreshToken);
         }
+    }
+
+    /**
+     * @param bool $maxRequests
+     * @param bool $duration
+     *
+     * @return $this
+     */
+    public function throttle ($maxRequests = false, $duration = false)
+    {
+        $this->throttle = $maxRequests ? true : false;
+
+        if ($this->throttle) {
+            $this->enableThrottling($maxRequests, $duration);
+        } else {
+            $this->client = new \GuzzleHttp\Client();
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param $maxRequests
+     * @param $duration
+     */
+    protected function enableThrottling ($maxRequests, $duration)
+    {
+        $stack = HandlerStack::create();
+        $middleware = new ThrottleMiddleware(new ArrayAdapter());
+
+        $middleware->registerConfiguration(
+            new ThrottleConfiguration(new RequestMatcher(), $maxRequests, $duration, 'zoho')
+        );
+
+        $stack->push($middleware, 'throttle');
+        $this->client = new \GuzzleHttp\Client([
+            'handler' => $stack
+        ]);
     }
 
     /**
@@ -266,6 +314,7 @@ class Client
 
     /**
      * @param string $grantCode
+     *
      * @return $this
      */
     public function setGrantCode (string $grantCode)
@@ -276,6 +325,7 @@ class Client
 
     /**
      * @param Cache\CacheItemPoolInterface $cacheItemPool
+     *
      * @return $this
      */
     public function useCache (Cache\CacheItemPoolInterface $cacheItemPool)
@@ -288,6 +338,7 @@ class Client
      * @param $uri
      * @param $method
      * @param array $data
+     *
      * @return mixed
      * @throws ApiError
      * @throws GrantCodeNotSetException
@@ -307,6 +358,13 @@ class Client
         try {
             return $this->client->$method($this->getUrl() . $uri, $options);
         } catch (ClientException $e) {
+
+            // Retry?
+            if ($e->getCode() === 401) {
+                $this->generateAccessToken();
+                return $this->call($uri, $method, $data);
+            }
+
             $response = $e->getResponse();
 
             if (!$response) {
@@ -338,6 +396,7 @@ class Client
      * @param $orderBy
      * @param $orderDir
      * @param array $search
+     *
      * @return mixed
      * @throws ApiError
      * @throws GrantCodeNotSetException
@@ -363,6 +422,7 @@ class Client
      * @param $url
      * @param null $id
      * @param array $params
+     *
      * @return array|mixed|string
      * @throws ApiError
      * @throws GrantCodeNotSetException
@@ -382,6 +442,7 @@ class Client
      * @param $url
      * @param array $params
      * @param array $queryParams
+     *
      * @return array|mixed|string
      * @throws ApiError
      * @throws GrantCodeNotSetException
@@ -398,11 +459,32 @@ class Client
     }
 
     /**
+     * @param $url
+     * @param array $params
+     * @param array $queryParams
+     *
+     * @return array|mixed|string
+     * @throws \Webleit\ZohoCrmApi\Exception\ApiError
+     * @throws \Webleit\ZohoCrmApi\Exception\GrantCodeNotSetException
+     * @throws \Webleit\ZohoCrmApi\Exception\NonExistingModule
+     */
+    public function put ($url, $params = [], $queryParams = [])
+    {
+        return $this->processResult(
+            $this->call($url, 'PUT', [
+                'query' => $queryParams,
+                'json' => $params
+            ])
+        );
+    }
+
+    /**
      * @param int $start
      * @param int $limit
      * @param string $orderBy
      * @param string $orderDir
      * @param array $search
+     *
      * @return array
      */
     protected function getPageContext ($start = 1, $limit = 10, $orderBy = 'created_time', $orderDir = 'DESC', $search = [])
@@ -420,6 +502,7 @@ class Client
 
     /**
      * @param ResponseInterface $response
+     *
      * @return array|mixed|string
      * @throws ApiError
      */
@@ -562,6 +645,7 @@ class Client
     /**
      * @param $token
      * @param int $expiresInSeconds
+     *
      * @return $this|mixed
      */
     public function setAccessToken ($token, $expiresInSeconds = 3600)
@@ -589,6 +673,7 @@ class Client
     /**
      * @param $token
      * @param int $expiresInSeconds
+     *
      * @return $this|mixed
      */
     public function setRefreshToken ($token, $expiresInSeconds = 3600)
@@ -650,6 +735,7 @@ class Client
 
     /**
      * @param $redirectUri
+     *
      * @return string
      */
     public function getGrantCodeConsentUrl ($redirectUri)
@@ -666,6 +752,7 @@ class Client
 
     /**
      * @param UriInterface $uri
+     *
      * @return string|null
      */
     public static function parseGrantTokenFromUrl (UriInterface $uri)

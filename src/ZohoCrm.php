@@ -16,7 +16,7 @@ use Webleit\ZohoCrmApi\Modules;
  * @property-read Modules\Settings $settings
  * @property-read Modules\Users $users
  * @property-read Modules\Org $org
- * @property-read Modules\Records $record
+ * @property-read Modules\Records $records
  */
 class ZohoCrm implements \Webleit\ZohoCrmApi\Contracts\ProvidesModules
 {
@@ -70,6 +70,18 @@ class ZohoCrm implements \Webleit\ZohoCrmApi\Contracts\ProvidesModules
     public function __construct ($clientId, $clientSecret, $refreshToken = '')
     {
         $this->client = new Client($clientId, $clientSecret, $refreshToken);
+    }
+
+    /**
+     * @param int|bool $maxRequests
+     * @param int|bool $duration
+     *
+     * @return $this
+     */
+    public function throttle ($maxRequests = false, $duration = false)
+    {
+        $this->client->throttle($maxRequests, $duration);
+        return $this;
     }
 
     /**
@@ -179,11 +191,7 @@ class ZohoCrm implements \Webleit\ZohoCrmApi\Contracts\ProvidesModules
             return $module;
         }
 
-        $modules = $this->getApiModules();
-        if ($modules->has($name)) {
-            /** @var Modules\Records $recordsModule */
-            return new Modules\Records($this->getClient(), $name);
-        }
+        return $this->createRecordsModule($name);
     }
 
     /**
@@ -218,5 +226,21 @@ class ZohoCrm implements \Webleit\ZohoCrmApi\Contracts\ProvidesModules
     public static function parseGrantTokenFromUrl (UriInterface $uri)
     {
         return Client::parseGrantTokenFromUrl($uri);
+    }
+
+    /**
+     * @param $name
+     *
+     * @return \Webleit\ZohoCrmApi\Modules\Records
+     * @throws \Webleit\ZohoCrmApi\Exception\ApiError
+     * @throws \Webleit\ZohoCrmApi\Exception\GrantCodeNotSetException
+     */
+    public function createRecordsModule ($name): \Webleit\ZohoCrmApi\Modules\Records
+    {
+        $modules = $this->getApiModules();
+        if ($modules->has($name)) {
+            /** @var Modules\Records $recordsModule */
+            return new Modules\Records($this->getClient(), $name);
+        }
     }
 }

@@ -15,7 +15,8 @@
         "guzzlehttp/guzzle": "~6.0",
         "tightenco/collect": "^5.7",
         "psr/cache": "^1.0",
-        "doctrine/inflector": "^1.3"
+        "doctrine/inflector": "^1.3",
+        "bentools/guzzle-throttle-middleware": "^0.4.0"
     },
     "require-dev": {
         "phpunit/phpunit": "7.*"

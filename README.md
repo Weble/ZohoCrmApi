@@ -14,7 +14,7 @@ In order for the library to work, you need to be authenticated with the zoho sig
 
 ```php
 require './vendor/autoload.php';
-$zohoSign = new \Webleit\ZohoCrmApi\ZohoCrm('[CLIENT_ID]', '[CLIENT_SECRET]', '[REFRESH_TOKEN]');
+$zohoCrm = new \Webleit\ZohoCrmApi\ZohoCrm('[CLIENT_ID]', '[CLIENT_SECRET]', '[REFRESH_TOKEN]');
 ```
 
 ## Authentication
