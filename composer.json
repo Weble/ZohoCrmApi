@@ -15,7 +15,9 @@
         "guzzlehttp/guzzle": "~6.0",
         "tightenco/collect": "^5.7",
         "psr/cache": "^1.0",
-        "doctrine/inflector": "^1.3"
+        "doctrine/inflector": "^1.3",
+        "bentools/guzzle-throttle-middleware": "^0.4.0",
+        "weble/zohoclient": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "7.*"
@@ -24,5 +26,11 @@
         "psr-4": {
             "Webleit\\ZohoCrmApi\\": "src"
         }
-    }
+    },
+    "repositories": [{
+        "type": "path",
+        "url": "../ZohoAuth/"
+    }],
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

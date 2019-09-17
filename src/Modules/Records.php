@@ -34,6 +34,14 @@ class Records extends Module
     /**
      * @return string
      */
+    public function getModuleName (): string
+    {
+        return $this->module;
+    }
+
+    /**
+     * @return string
+     */
     public function getUrlPath()
     {
         return $this->module;

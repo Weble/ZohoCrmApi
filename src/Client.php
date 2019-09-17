@@ -2,14 +2,18 @@
 
 namespace Webleit\ZohoCrmApi;
 
+use BenTools\GuzzleHttp\Middleware\Storage\Adapter\ArrayAdapter;
+use BenTools\GuzzleHttp\Middleware\ThrottleConfiguration;
+use BenTools\GuzzleHttp\Middleware\ThrottleMiddleware;
 use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\Psr7\Response;
-use Psr\Cache;
+use GuzzleHttp\HandlerStack;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\UriInterface;
+use Weble\ZohoClient\OAuthClient;
 use Webleit\ZohoCrmApi\Exception\ApiError;
 use Webleit\ZohoCrmApi\Exception\GrantCodeNotSetException;
 use Webleit\ZohoCrmApi\Exception\NonExistingModule;
+use Webleit\ZohoCrmApi\Request\RequestMatcher;
 
 /**
  * Class Client
@@ -18,14 +22,6 @@ use Webleit\ZohoCrmApi\Exception\NonExistingModule;
  */
 class Client
 {
-    const OAUTH_GRANT_URL_US = "https://accounts.zoho.com/oauth/v2/auth";
-    const OAUTH_GRANT_URL_EU = "https://accounts.zoho.eu/oauth/v2/auth";
-    const OAUTH_GRANT_URL_CN = "https://accounts.zoho.cn/oauth/v2/auth";
-
-    const OAUTH_API_URL_US = "https://accounts.zoho.com/oauth/v2/token";
-    const OAUTH_API_URL_EU = "https://accounts.zoho.eu/oauth/v2/token";
-    const OAUTH_API_URL_CN = "https://accounts.zoho.cn/oauth/v2/token";
-
     const ZOHOCRM_API_URL_PRODUCTION_US = "https://www.zohoapis.com/crm/v2/";
     const ZOHOCRM_API_URL_PRODUCTION_EU = "https://www.zohoapis.eu/crm/v2/";
     const ZOHOCRM_API_URL_PRODUCTION_CN = "https://www.zohoapis.cn/crm/v2/";
@@ -42,9 +38,10 @@ class Client
     const MODE_DEVELOPER = 'developer';
     const MODE_SANDBOX = 'sandbox';
 
-    const DC_US = 'com';
-    const DC_EU = 'eu';
-    const DC_CN = 'cn';
+    /**
+     * @var bool
+     */
+    protected $throttle = false;
 
     /**
      * @var \GuzzleHttp\Client
@@ -52,29 +49,9 @@ class Client
     protected $client;
 
     /**
-     * @var string
+     * @var OAuthClient
      */
-    protected $grantCode;
-
-    /**
-     * @var string
-     */
-    protected $clientSecret;
-
-    /**
-     * @var string
-     */
-    protected $clientId;
-
-    /**
-     * @var string
-     */
-    protected $accessToken = '';
-
-    /**
-     * @var string
-     */
-    protected $refreshToken = '';
+    protected $oAuthClient;
 
     /**
      * @var string
@@ -84,35 +61,74 @@ class Client
     /**
      * @var string
      */
-    protected $dc = self::DC_US;
-
-    /**
-     * @var Cache\CacheItemPoolInterface
-     */
-    protected $cache;
+    protected $dc = OAuthClient::DC_US;
 
     /**
      * Client constructor.
+     *
      * @param $clientId
      * @param $clientSecret
-     * @param $grantCode
+     * @param $refreshToken
      */
-    public function __construct ($clientId, $clientSecret, $refreshToken = null)
+    public function __construct($clientId, $clientSecret, $refreshToken = null)
     {
         $this->client = new \GuzzleHttp\Client();
+        $this->oAuthClient = new OAuthClient($clientId, $clientSecret, $refreshToken);
+        $this->oAuthClient->setRefreshToken($refreshToken);
+    }
 
-        $this->clientId = $clientId;
-        $this->clientSecret = $clientSecret;
+    /**
+     * @param $name
+     * @param $arguments
+     * @return mixed
+     */
+    public function __call($name, $arguments)
+    {
+        return call_user_func_array([$this->oAuthClient, $name], $arguments);
+    }
 
-        if ($refreshToken) {
-            $this->setRefreshToken($refreshToken);
+    /**
+     * @param  bool  $maxRequests
+     * @param  bool  $duration
+     *
+     * @return $this
+     */
+    public function throttle($maxRequests = false, $duration = false)
+    {
+        $this->throttle = $maxRequests ? true : false;
+
+        if ($this->throttle) {
+            $this->enableThrottling($maxRequests, $duration);
+        } else {
+            $this->client = new \GuzzleHttp\Client();
         }
+
+        return $this;
+    }
+
+    /**
+     * @param $maxRequests
+     * @param $duration
+     */
+    protected function enableThrottling($maxRequests, $duration)
+    {
+        $stack = HandlerStack::create();
+        $middleware = new ThrottleMiddleware(new ArrayAdapter());
+
+        $middleware->registerConfiguration(
+            new ThrottleConfiguration(new RequestMatcher(), $maxRequests, $duration, 'zoho')
+        );
+
+        $stack->push($middleware, 'throttle');
+        $this->client = new \GuzzleHttp\Client([
+            'handler' => $stack
+        ]);
     }
 
     /**
      * @return $this
      */
-    public function developerMode ()
+    public function developerMode()
     {
         $this->mode = self::MODE_DEVELOPER;
         return $this;
@@ -121,7 +137,7 @@ class Client
     /**
      * @return $this
      */
-    public function productionMode ()
+    public function productionMode()
     {
         $this->mode = self::MODE_PRODUCTION;
         return $this;
@@ -130,7 +146,7 @@ class Client
     /**
      * @return $this
      */
-    public function sandboxMode ()
+    public function sandboxMode()
     {
         $this->mode = self::MODE_SANDBOX;
         return $this;
@@ -139,7 +155,7 @@ class Client
     /**
      * @return string
      */
-    public function getMode ()
+    public function getMode()
     {
         return $this->mode;
     }
@@ -147,45 +163,45 @@ class Client
     /**
      * @return $this
      */
-    public function euRegion ()
+    public function euRegion()
     {
-        $this->dc = self::DC_EU;
+        $this->dc = OAuthClient::DC_EU;
         return $this;
     }
 
     /**
      * @return $this
      */
-    public function usRegion ()
+    public function usRegion()
     {
-        $this->dc = self::DC_US;
+        $this->dc = OAuthClient::DC_US;
         return $this;
     }
 
     /**
      * @return $this
      */
-    public function cnRegion ()
+    public function cnRegion()
     {
-        $this->dc = self::DC_CN;
+        $this->dc = OAuthClient::DC_CN;
         return $this;
     }
 
     /**
      * @return string
      */
-    public function getUrl ()
+    public function getUrl()
     {
         switch ($this->mode) {
             case self::MODE_DEVELOPER:
                 switch ($this->dc) {
-                    case self::DC_CN:
+                    case OAuthClient::DC_CN:
                         return self::ZOHOCRM_API_URL_DEVELOPER_CN;
                         break;
-                    case self::DC_EU:
+                    case OAuthClient::DC_EU:
                         return self::ZOHOCRM_API_URL_DEVELOPER_EU;
                         break;
-                    case self::DC_US:
+                    case OAuthClient::DC_US:
                     default:
                         return self::ZOHOCRM_API_URL_DEVELOPER_US;
                         break;
@@ -194,13 +210,13 @@ class Client
                 break;
             case self::MODE_SANDBOX:
                 switch ($this->dc) {
-                    case self::DC_CN:
+                    case OAuthClient::DC_CN:
                         return self::ZOHOCRM_API_URL_SANDBOX_CN;
                         break;
-                    case self::DC_EU:
+                    case OAuthClient::DC_EU:
                         return self::ZOHOCRM_API_URL_SANDBOX_EU;
                         break;
-                    case self::DC_US:
+                    case OAuthClient::DC_US:
                     default:
                         return self::ZOHOCRM_API_URL_SANDBOX_US;
                         break;
@@ -210,13 +226,13 @@ class Client
             case self::MODE_PRODUCTION:
             default:
                 switch ($this->dc) {
-                    case self::DC_CN:
+                    case OAuthClient::DC_CN:
                         return self::ZOHOCRM_API_URL_PRODUCTION_CN;
                         break;
-                    case self::DC_EU:
+                    case OAuthClient::DC_EU:
                         return self::ZOHOCRM_API_URL_PRODUCTION_EU;
                         break;
-                    case self::DC_US:
+                    case OAuthClient::DC_US:
                     default:
                         return self::ZOHOCRM_API_URL_PRODUCTION_US;
                         break;
@@ -227,86 +243,36 @@ class Client
     }
 
     /**
-     * @return string
-     */
-    public function getOAuthApiUrl ()
-    {
-        switch ($this->dc) {
-            case self::DC_CN:
-                return self::OAUTH_API_URL_CN;
-                break;
-            case self::DC_EU:
-                return self::OAUTH_API_URL_EU;
-                break;
-            case self::DC_US:
-            default:
-                return self::OAUTH_API_URL_US;
-                break;
-        }
-    }
-
-    /**
-     * @return string
-     */
-    public function getOAuthGrantUrl ()
-    {
-        switch ($this->dc) {
-            case self::DC_CN:
-                return self::OAUTH_GRANT_URL_CN;
-                break;
-            case self::DC_EU:
-                return self::OAUTH_GRANT_URL_EU;
-                break;
-            case self::DC_US:
-            default:
-                return self::OAUTH_GRANT_URL_US;
-                break;
-        }
-    }
-
-    /**
-     * @param string $grantCode
-     * @return $this
-     */
-    public function setGrantCode (string $grantCode)
-    {
-        $this->grantCode = $grantCode;
-        return $this;
-    }
-
-    /**
-     * @param Cache\CacheItemPoolInterface $cacheItemPool
-     * @return $this
-     */
-    public function useCache (Cache\CacheItemPoolInterface $cacheItemPool)
-    {
-        $this->cache = $cacheItemPool;
-        return $this;
-    }
-
-    /**
      * @param $uri
      * @param $method
-     * @param array $data
+     * @param  array  $data
+     *
      * @return mixed
      * @throws ApiError
      * @throws GrantCodeNotSetException
      * @throws NonExistingModule
      */
-    public function call ($uri, $method, $data = [])
+    public function call($uri, $method, $data = [])
     {
         $options = array_merge([
             'query' => [],
             'form_params' => [],
             'json' => [],
             'headers' => [
-                'Authorization' => 'Zoho-oauthtoken ' . $this->getAccessToken()
+                'Authorization' => 'Zoho-oauthtoken '.$this->oAuthClient->getAccessToken()
             ]
         ], $data);
 
         try {
-            return $this->client->$method($this->getUrl() . $uri, $options);
+            return $this->client->$method($this->getUrl().$uri, $options);
         } catch (ClientException $e) {
+
+            // Retry?
+            if ($e->getCode() === 401) {
+                $this->oAuthClient->generateAccessToken();
+                return $this->call($uri, $method, $data);
+            }
+
             $response = $e->getResponse();
 
             if (!$response) {
@@ -337,13 +303,21 @@ class Client
      * @param $limit
      * @param $orderBy
      * @param $orderDir
-     * @param array $search
+     * @param  array  $search
+     *
      * @return mixed
      * @throws ApiError
      * @throws GrantCodeNotSetException
      */
-    public function getList ($uri, $params = [], $start = 1, $limit = 10, $orderBy = 'created_time', $orderDir = 'DESC', $search = [])
-    {
+    public function getList(
+        $uri,
+        $params = [],
+        $start = 1,
+        $limit = 10,
+        $orderBy = 'created_time',
+        $orderDir = 'DESC',
+        $search = []
+    ) {
         $pageContext = $this->getPageContext($start, $limit, $orderBy, $orderDir, $search);
 
         $params = array_merge($params, [
@@ -361,16 +335,17 @@ class Client
 
     /**
      * @param $url
-     * @param null $id
-     * @param array $params
+     * @param  null  $id
+     * @param  array  $params
+     *
      * @return array|mixed|string
      * @throws ApiError
      * @throws GrantCodeNotSetException
      */
-    public function get ($url, $id = null, $params = [])
+    public function get($url, $id = null, $params = [])
     {
         if ($id !== null) {
-            $url .= '/' . $id;
+            $url .= '/'.$id;
         }
 
         return $this->processResult(
@@ -380,14 +355,15 @@ class Client
 
     /**
      * @param $url
-     * @param array $params
-     * @param array $queryParams
+     * @param  array  $params
+     * @param  array  $queryParams
+     *
      * @return array|mixed|string
      * @throws ApiError
      * @throws GrantCodeNotSetException
      * @throws NonExistingModule
      */
-    public function post ($url, $params = [], $queryParams = [])
+    public function post($url, $params = [], $queryParams = [])
     {
         return $this->processResult(
             $this->call($url, 'POST', [
@@ -398,15 +374,41 @@ class Client
     }
 
     /**
-     * @param int $start
-     * @param int $limit
-     * @param string $orderBy
-     * @param string $orderDir
-     * @param array $search
+     * @param $url
+     * @param  array  $params
+     * @param  array  $queryParams
+     *
+     * @return array|mixed|string
+     * @throws \Webleit\ZohoCrmApi\Exception\ApiError
+     * @throws \Webleit\ZohoCrmApi\Exception\GrantCodeNotSetException
+     * @throws \Webleit\ZohoCrmApi\Exception\NonExistingModule
+     */
+    public function put($url, $params = [], $queryParams = [])
+    {
+        return $this->processResult(
+            $this->call($url, 'PUT', [
+                'query' => $queryParams,
+                'json' => $params
+            ])
+        );
+    }
+
+    /**
+     * @param  int  $start
+     * @param  int  $limit
+     * @param  string  $orderBy
+     * @param  string  $orderDir
+     * @param  array  $search
+     *
      * @return array
      */
-    protected function getPageContext ($start = 1, $limit = 10, $orderBy = 'created_time', $orderDir = 'DESC', $search = [])
-    {
+    protected function getPageContext(
+        $start = 1,
+        $limit = 10,
+        $orderBy = 'created_time',
+        $orderDir = 'DESC',
+        $search = []
+    ) {
         return [
             'page_context' => [
                 'row_count' => $limit,
@@ -419,15 +421,16 @@ class Client
     }
 
     /**
-     * @param ResponseInterface $response
+     * @param  ResponseInterface  $response
+     *
      * @return array|mixed|string
      * @throws ApiError
      */
-    protected function processResult (ResponseInterface $response)
+    protected function processResult(ResponseInterface $response)
     {
         // All ok, probably not json, like PDF?
         if ($response->getStatusCode() < 200 || $response->getStatusCode() > 299) {
-            throw new ApiError('Response from Zoho is not success. Message: ' . $response->getReasonPhrase());
+            throw new ApiError('Response from Zoho is not success. Message: '.$response->getReasonPhrase());
         }
 
         try {
@@ -436,19 +439,19 @@ class Client
 
             // All ok, probably not json, like PDF?
             if ($response->getStatusCode() >= 200 && $response->getStatusCode() <= 299) {
-                return (string)$response->getBody();
+                return (string) $response->getBody();
             }
 
-            throw new ApiError('Response from Zoho is not success. Message: ' . $response->getReasonPhrase());
+            throw new ApiError('Response from Zoho is not success. Message: '.$response->getReasonPhrase());
         }
 
         if (!$result) {
             // All ok, probably not json, like PDF?
             if ($response->getStatusCode() >= 200 && $response->getStatusCode() <= 299) {
-                return (string)$response->getBody();
+                return (string) $response->getBody();
             }
 
-            throw new ApiError('Response from Zoho is not success. Message: ' . $response->getReasonPhrase());
+            throw new ApiError('Response from Zoho is not success. Message: '.$response->getReasonPhrase());
         }
 
         return $result;
@@ -457,230 +460,19 @@ class Client
     /**
      * @return \GuzzleHttp\Client
      */
-    public function getHttpClient (): \GuzzleHttp\Client
+    public function getHttpClient(): \GuzzleHttp\Client
     {
         return $this->client;
     }
 
     /**
-     * @return mixed
-     * @throws ApiError
-     * @throws GrantCodeNotSetException
+     * @param  CacheItemPoolInterface  $cacheItemPool
+     *
+     * @return $this
      */
-    public function getAccessToken ()
+    public function useCache(CacheItemPoolInterface $cacheItemPool)
     {
-        if ($this->accessToken) {
-            return $this->accessToken;
-        }
-
-        if (!$this->cache) {
-            return $this->generateAccessToken();
-        }
-
-        try {
-            $cachedAccessToken = $this->cache->getItem('zoho_crm_access_token');
-
-            $value = $cachedAccessToken->get();
-            if ($value) {
-                return $value;
-            }
-
-            $accessToken = $this->generateAccessToken();
-            $cachedAccessToken->set($accessToken);
-            $cachedAccessToken->expiresAfter(60 * 59);
-            $this->cache->save($cachedAccessToken);
-
-            return $accessToken;
-
-        } catch (\Psr\Cache\InvalidArgumentException $e) {
-            return $this->generateAccessToken();
-        }
-    }
-
-    /**
-     * @return mixed
-     * @throws ApiError
-     * @throws GrantCodeNotSetException
-     */
-    protected function generateAccessToken ()
-    {
-        $response = $this->client->post($this->getOAuthApiUrl(), [
-            'query' => [
-                'refresh_token' => $this->getRefreshToken(),
-                'client_id' => $this->clientId,
-                'client_secret' => $this->clientSecret,
-                'grant_type' => 'refresh_token'
-            ]
-        ]);
-
-        $data = json_decode($response->getBody());
-
-        if (!isset($data->access_token)) {
-            throw new ApiError(@$data->error);
-        }
-
-        $this->setAccessToken($data->access_token, $data->expires_in_sec);
-
-        return $data->access_token;
-    }
-
-    /**
-     * @return mixed|string
-     * @throws ApiError
-     * @throws GrantCodeNotSetException
-     */
-    public function getRefreshToken ()
-    {
-        if ($this->refreshToken) {
-            return $this->refreshToken;
-        }
-
-        if (!$this->cache) {
-            return $this->generateRefreshToken();
-        }
-
-        try {
-            $cachedAccessToken = $this->cache->getItem('zoho_crm_refresh_token');
-
-            $value = $cachedAccessToken->get();
-            if ($value) {
-                return $value;
-            }
-
-            $accessToken = $this->generateRefreshToken();
-            $cachedAccessToken->set($accessToken);
-            $cachedAccessToken->expiresAfter(60 * 59);
-            $this->cache->save($cachedAccessToken);
-
-            return $accessToken;
-
-        } catch (\Psr\Cache\InvalidArgumentException $e) {
-            return $this->generateRefreshToken();
-        }
-    }
-
-    /**
-     * @param $token
-     * @param int $expiresInSeconds
-     * @return $this|mixed
-     */
-    public function setAccessToken ($token, $expiresInSeconds = 3600)
-    {
-        $this->accessToken = $token;
-
-        if (!$this->cache) {
-            return $this;
-        }
-
-        try {
-            $cachedToken = $this->cache->getItem('zoho_crm_access_token');
-
-            $cachedToken->set($token);
-            $cachedToken->expiresAfter($expiresInSeconds);
-            $this->cache->save($cachedToken);
-
-            return $this;
-
-        } catch (\Psr\Cache\InvalidArgumentException $e) {
-            return $this;
-        }
-    }
-
-    /**
-     * @param $token
-     * @param int $expiresInSeconds
-     * @return $this|mixed
-     */
-    public function setRefreshToken ($token, $expiresInSeconds = 3600)
-    {
-        $this->refreshToken = $token;
-
-        if (!$this->cache) {
-            return $this;
-        }
-
-        try {
-            $cachedToken = $this->cache->getItem('zoho_crm_refresh_token');
-
-            $cachedToken->set($token);
-            $cachedToken->expiresAfter($expiresInSeconds);
-            $this->cache->save($cachedToken);
-
-            return $this;
-
-        } catch (\Psr\Cache\InvalidArgumentException $e) {
-            return $this;
-        }
-    }
-
-
-    /**
-     * @return string
-     * @throws ApiError
-     * @throws GrantCodeNotSetException
-     */
-    protected function generateRefreshToken ()
-    {
-        if (!$this->grantCode) {
-            throw new GrantCodeNotSetException('You need to pass a grant code to use the Api. To generate a grant code visit ' . $this->getGrantCodeConsentUrl());
-        }
-
-        $response = $this->client->post($this->getOAuthApiUrl(), [
-            'query' => [
-                'code' => $this->grantCode,
-                'client_id' => $this->clientId,
-                'client_secret' => $this->clientSecret,
-                'state' => 'testing',
-                'grant_type' => 'authorization_code',
-                'scope' => 'ZohoCRM.users.all,ZohoCRM.settings.all,ZohoCRM.modules.all,ZohoCRM.org.all'
-            ]
-        ]);
-
-        $data = json_decode($response->getBody());
-
-        if (!isset($data->refresh_token)) {
-            throw new ApiError(@$data->error);
-        }
-
-        $this->setAccessToken($data->access_token, $data->expires_in_sec);
-        $this->setRefreshToken($data->refresh_token, $data->expires_in_sec);
-
-        return $data->refresh_token;
-    }
-
-    /**
-     * @param $redirectUri
-     * @return string
-     */
-    public function getGrantCodeConsentUrl ($redirectUri)
-    {
-        return $this->getOAuthGrantUrl() . '?' . http_build_query([
-                'client_id' => $this->clientId,
-                'state' => 'testing',
-                'redirect_uri' => $redirectUri,
-                'response_type' => 'code',
-                'access_type' => 'offline',
-                'scope' => 'ZohoCRM.users.all,ZohoCRM.settings.all,ZohoCRM.modules.all,ZohoCRM.org.all'
-            ]);
-    }
-
-    /**
-     * @param UriInterface $uri
-     * @return string|null
-     */
-    public static function parseGrantTokenFromUrl (UriInterface $uri)
-    {
-        $query = $uri->getQuery();
-        $data = explode('&', $query);
-
-        foreach ($data as &$d) {
-            $d = explode("=", $d);
-        }
-
-        if (isset($data['code'])) {
-            return $data['code'];
-        }
-
-        return null;
+        $this->oAuthClient->useCache($cacheItemPool);
+        return $this;
     }
 }

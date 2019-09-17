@@ -112,7 +112,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
     public function createMany($data, $params = [], $triggers = [self::TRIGGER_APPROVAL, self::TRIGGER_WORKFLOW, self::TRIGGER_BLUEPRINT])
     {
         $data = [
-            'data' => $data,
+            'data' => (array) $data,
             'triggers' => $triggers
         ];
 
@@ -121,7 +121,8 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
 
         $results = [];
         foreach ($data as $row) {
-            $item = null;
+            $item = $row;
+
             if ($row['code'] == 'SUCCESS') {
                 $item = $this->make($row['details']);
             }
@@ -133,18 +134,67 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
     }
 
     /**
-     * Update a record for this module
-     * @param string $id
-     * @param array $data
+     * @param $id
+     * @param $data
      * @param array $params
+     * @param array $triggers
+     *
      * @return Model
+     * @throws \Webleit\ZohoCrmApi\Exception\ApiError
+     * @throws \Webleit\ZohoCrmApi\Exception\GrantCodeNotSetException
+     * @throws \Webleit\ZohoCrmApi\Exception\NonExistingModule
      */
-    public function update($id, $data, $params = [])
+    public function update($id, $data, $params = [], $triggers = [self::TRIGGER_APPROVAL, self::TRIGGER_WORKFLOW, self::TRIGGER_BLUEPRINT])
     {
-        $data = $this->client->put($this->getUrl(), $id, null, $data, $params);
-        $data = $data[Inflector::singularize($this->getResourceKey())];
+        $data['id'] = $id;
 
-        return $this->make($data);
+        $data = [
+            'data' => [$data],
+            'triggers' => $triggers
+        ];
+
+        $data = $this->client->put($this->getUrl(), $data, $params);
+        $row = array_shift($data['data']);
+
+
+        $item = null;
+        if ($row['code'] == 'SUCCESS') {
+            $item = $this->make($row['details']);
+        }
+
+        return $item;
+    }
+
+    /**
+     * @param $id
+     * @param $data
+     * @param array $params
+     * @param array $triggers
+     *
+     * @return \Illuminate\Support\Collection|\Tightenco\Collect\Support\Collection
+     * @throws \Webleit\ZohoCrmApi\Exception\ApiError
+     * @throws \Webleit\ZohoCrmApi\Exception\GrantCodeNotSetException
+     * @throws \Webleit\ZohoCrmApi\Exception\NonExistingModule
+     */
+    public function updateMany($data, $params = [], $triggers = [self::TRIGGER_APPROVAL, self::TRIGGER_WORKFLOW, self::TRIGGER_BLUEPRINT])
+    {
+        $data = [
+            'data' => $data,
+            'triggers' => $triggers
+        ];
+
+        $data = $this->client->put($this->getUrl(), $data, $params);
+        $items = [];
+        foreach ($data['data'] as $row) {
+
+            $item = $row;
+            if ($row['code'] == 'SUCCESS') {
+                $item = $this->make($row['details']);
+            }
+            $items[] = $item;
+        }
+
+        return collect($items);
     }
 
     /**

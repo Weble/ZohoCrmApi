@@ -7,7 +7,6 @@ use Webleit\ZohoCrmApi\Client;
 use Webleit\ZohoCrmApi\Exception\NonExistingModule;
 use Webleit\ZohoCrmApi\Models\Request;
 use Webleit\ZohoCrmApi\Models\Settings\Layout;
-use Webleit\ZohoCrmApi\Models\Settings\Module;
 use Webleit\ZohoCrmApi\Models\Template;
 use Webleit\ZohoCrmApi\Models\User;
 use Webleit\ZohoCrmApi\Modules\Records;
@@ -32,18 +31,19 @@ class ApiTest extends TestCase
     /**
      * setup
      */
-    public static function setUpBeforeClass ()
+    public static function setUpBeforeClass()
     {
 
-        $authFile = __DIR__ . '/config.example.json';
-        if (file_exists(__DIR__ . '/config.json')) {
-            $authFile = __DIR__ . '/config.json';
+        $authFile = __DIR__.'/config.example.json';
+        if (file_exists(__DIR__.'/config.json')) {
+            $authFile = __DIR__.'/config.json';
         }
 
         $auth = json_decode(file_get_contents($authFile));
 
         $client = new ZohoCrm($auth->client_id, $auth->client_secret);
         $client->setRefreshToken($auth->refresh_token);
+        $client->throttle(1, 1);
 
         self::$client = $client->getClient()->usRegion()->developerMode();
         self::$zoho = $client;
@@ -52,16 +52,17 @@ class ApiTest extends TestCase
     /**
      * @test
      */
-    public function hasAccessToken ()
+    public function hasAccessToken()
     {
         $accessToken = self::$client->getAccessToken();
         $this->assertTrue(strlen($accessToken) > 0);
+        $this->assertFalse(self::$client->accessTokenExpired());
     }
 
     /**
      * @test
      */
-    public function canGetListOfModules ()
+    public function canGetListOfModules()
     {
         $this->assertGreaterThan(0, self::$zoho->settings->modules->getList()->count());
     }
@@ -69,7 +70,7 @@ class ApiTest extends TestCase
     /**
      * @test
      */
-    public function canGetModuleDetails ()
+    public function canGetModuleDetails()
     {
         $this->assertEquals('Leads', self::$zoho->settings->modules->get('Leads')->module_name);
     }
@@ -77,7 +78,7 @@ class ApiTest extends TestCase
     /**
      * @test
      */
-    public function canGetModuleFields ()
+    public function canGetModuleFields()
     {
         $this->assertGreaterThan(0, self::$zoho->settings->modules->get('Leads')->getFields()->count());
     }
@@ -85,7 +86,7 @@ class ApiTest extends TestCase
     /**
      * @test
      */
-    public function canGetModuleLayouts ()
+    public function canGetModuleLayouts()
     {
         $this->assertGreaterThan(0, self::$zoho->settings->modules->get('Leads')->getLayouts()->count());
     }
@@ -93,7 +94,7 @@ class ApiTest extends TestCase
     /**
      * @test
      */
-    public function canGetModuleRelatedLists ()
+    public function canGetModuleRelatedLists()
     {
         $this->assertGreaterThan(0, self::$zoho->settings->modules->get('Leads')->getRelatedLists()->count());
     }
@@ -101,7 +102,7 @@ class ApiTest extends TestCase
     /**
      * @test
      */
-    public function canGetModuleCustomViews ()
+    public function canGetModuleCustomViews()
     {
         $this->assertGreaterThan(0, self::$zoho->settings->modules->get('Leads')->getCustomViews()->count());
     }
@@ -109,7 +110,7 @@ class ApiTest extends TestCase
     /**
      * @test
      */
-    public function canGetSingleCustomView ()
+    public function canGetSingleCustomView()
     {
         $layouts = self::$zoho->settings->modules->get('Leads')->getCustomViews();
         $leads = self::$zoho->settings->modules->get('Leads');
@@ -121,7 +122,7 @@ class ApiTest extends TestCase
     /**
      * @test
      */
-    public function canGetSingleLayout ()
+    public function canGetSingleLayout()
     {
         $layouts = self::$zoho->settings->modules->get('Leads')->getLayouts();
         $leads = self::$zoho->settings->modules->get('Leads');
@@ -133,7 +134,7 @@ class ApiTest extends TestCase
     /**
      * @test
      */
-    public function canGetListOfUsers ()
+    public function canGetListOfUsers()
     {
         $this->assertGreaterThan(0, self::$zoho->users->getList()->count());
     }
@@ -141,7 +142,7 @@ class ApiTest extends TestCase
     /**
      * @test
      */
-    public function canGetListOfCoreModuleRecords ()
+    public function canGetListOfCoreModuleRecords()
     {
         $modules = self::$zoho->getApiModules();
 
@@ -159,7 +160,7 @@ class ApiTest extends TestCase
     /**
      * @test
      */
-    public function canCreateLead ()
+    public function canCreateLead()
     {
         /** @var Records $leadModule */
         $leadModule = self::$zoho->leads;
@@ -179,21 +180,44 @@ class ApiTest extends TestCase
     /**
      * @test
      */
-    public function canCreateLeads ()
+    public function canUpdateLead()
     {
-        $data = [[
-            'Company' => 'Alpha ltd',
-            'Last_Name' => 'Doe',
-            'First_Name' => 'John'
-            ],[
-            'Company' => 'Alpha ltd',
-            'Last_Name' => 'Doe',
-            'First_Name' => 'John'
+        /** @var Records $leadModule */
+        $leadModule = self::$zoho->leads;
+        /** @var \Webleit\ZohoCrmApi\Models\Record $lead */
+        $lead = self::$zoho->leads->getList()->first();
+
+        $response = $leadModule->update($lead->getId(), [
+            'Company' => 'Beta',
+        ]);
+
+        $this->assertNotEmpty($response->getId());
+
+        $lead = self::$zoho->leads->get($response->getId());
+
+        $this->assertEquals('Beta', $lead->Company);
+    }
+
+    /**
+     * @test
+     */
+    public function canCreateLeads()
+    {
+        $data = [
+            [
+                'Company' => 'Alpha ltd',
+                'Last_Name' => 'Doe',
+                'First_Name' => 'John'
             ], [
-            'Company' => 'Beta ltd',
-            'Last_Name' => 'Doe',
-            'First_Name' => 'John'
-        ]];
+                'Company' => 'Alpha ltd',
+                'Last_Name' => 'Doe',
+                'First_Name' => 'John'
+            ], [
+                'Company' => 'Beta ltd',
+                'Last_Name' => 'Doe',
+                'First_Name' => 'John'
+            ]
+        ];
 
         /** @var Records $leadModule */
         $leadModule = self::$zoho->leads;
@@ -213,20 +237,22 @@ class ApiTest extends TestCase
     /**
      * @test
      */
-    public function canCreateLeadsEvenWhenErrorOccurs ()
+    public function canCreateLeadsEvenWhenErrorOccurs()
     {
-        $data = [[
-            'Company' => 'Alpha ltd',
-            'Last_Name' => 'Doe',
-            'First_Name' => 'John'
-        ],[
-            'Company' => 'Alpha ltd',
-            'First_Name' => 'John' // This one misses last name, and will fail
-        ], [
-            'Company' => 'Beta ltd',
-            'Last_Name' => 'Doe',
-            'First_Name' => 'John'
-        ]];
+        $data = [
+            [
+                'Company' => 'Alpha ltd',
+                'Last_Name' => 'Doe',
+                'First_Name' => 'John'
+            ], [
+                'Company' => 'Alpha ltd',
+                'First_Name' => 'John' // This one misses last name, and will fail
+            ], [
+                'Company' => 'Beta ltd',
+                'Last_Name' => 'Doe',
+                'First_Name' => 'John'
+            ]
+        ];
 
         /** @var Records $leadModule */
         $leadModule = self::$zoho->leads;
@@ -241,7 +267,7 @@ class ApiTest extends TestCase
     /**
      * @test
      */
-    public function canGetSingleUser ()
+    public function canGetSingleUser()
     {
         $users = self::$zoho->users->getList();
 
@@ -253,7 +279,7 @@ class ApiTest extends TestCase
     /**
      * @test
      */
-    public function canListRoles ()
+    public function canListRoles()
     {
         $this->assertGreaterThan(0, self::$zoho->settings->roles->getList()->count());
     }
@@ -261,7 +287,7 @@ class ApiTest extends TestCase
     /**
      * @test
      */
-    public function canGetSingleRole ()
+    public function canGetSingleRole()
     {
         $users = self::$zoho->settings->roles->getList();
 
@@ -273,7 +299,7 @@ class ApiTest extends TestCase
     /**
      * @test
      */
-    public function canListProfiles ()
+    public function canListProfiles()
     {
         $this->assertGreaterThan(0, self::$zoho->settings->profiles->getList()->count());
     }
@@ -281,7 +307,7 @@ class ApiTest extends TestCase
     /**
      * @test
      */
-    public function canGetSingleProfile ()
+    public function canGetSingleProfile()
     {
         $users = self::$zoho->settings->profiles->getList();
 
@@ -293,7 +319,40 @@ class ApiTest extends TestCase
     /**
      * @test
      */
-    public function getCorrectApiUrl ()
+    public function canCreateSalesOrder()
+    {
+        /** @var Records $module */
+        $module = new Records(self::$client, 'Sales_Orders');
+
+        /** @var Records $module */
+        $productsModule = new Records(self::$client, 'Products');
+        $product = $productsModule->create([
+            'Product_Name' => 'Test'
+        ]);
+
+        $response = $module->create([
+            'Subject' => '123',
+            'Product_Details' => [
+                [
+                    'product' => $product->getId(),
+                    'Unit_Price' => 10,
+                    'quantity' => 2
+                ]
+            ]
+        ]);
+
+        $this->assertNotEmpty($response->getId());
+
+        $order = $module->get($response->getId());
+
+        $this->assertEquals('123', $order->Subject);
+    }
+
+
+    /**
+     * @test
+     */
+    public function getCorrectApiUrl()
     {
         self::$client->sandboxMode();
         $this->assertEquals(Client::ZOHOCRM_API_URL_SANDBOX_US, self::$client->getUrl());
