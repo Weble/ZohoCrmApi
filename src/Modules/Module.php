@@ -211,6 +211,17 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
         return true;
     }
 
+    public function updateRelatedRecord($relationName, $relatedRecordId, $data = [])
+    {
+        $data = [
+            'data' => [$data],
+        ];
+
+        dd($data);
+
+        return $this->client->post($this->getUrl() . '/' . $relationName . '/' . $relatedRecordId, $data);
+    }
+
     /**
      * Get the url path for the api of this module (ie: /organizations)
      * @return string
