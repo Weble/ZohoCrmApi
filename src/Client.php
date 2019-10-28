@@ -166,6 +166,14 @@ class Client
     public function euRegion()
     {
         $this->dc = OAuthClient::DC_EU;
+        $this->oAuthClient->euRegion();
+        return $this;
+    }
+
+    public function inRegion()
+    {
+        $this->dc = OAuthClient::DC_IN;
+        $this->oAuthClient->inRegion();
         return $this;
     }
 
@@ -175,6 +183,7 @@ class Client
     public function usRegion()
     {
         $this->dc = OAuthClient::DC_US;
+        $this->oAuthClient->usRegion();
         return $this;
     }
 
@@ -184,6 +193,7 @@ class Client
     public function cnRegion()
     {
         $this->dc = OAuthClient::DC_CN;
+        $this->oAuthClient->cnRegion();
         return $this;
     }
 

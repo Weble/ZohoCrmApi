@@ -211,15 +211,42 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
         return true;
     }
 
-    public function updateRelatedRecord($relationName, $relatedRecordId, $data = [])
+    /**
+     * @param $relationName
+     * @param $relatedRecordId
+     * @param  array  $data
+     * @return array|mixed|string
+     * @throws GrantCodeNotSetException
+     * @throws \Webleit\ZohoCrmApi\Exception\ApiError
+     * @throws \Webleit\ZohoCrmApi\Exception\NonExistingModule
+     */
+    public function updateRelatedRecord($recordId, $relationName, $relatedRecordId, $data = [])
     {
-        $data = [
-            'data' => [$data],
+        $data = array_merge($data, [
+            'id' => $relatedRecordId
+        ]);
+
+        $putData = [
+            'data' => [
+                $data
+            ],
         ];
 
-        dd($data);
+        return $this->client->put($this->getUrl() . '/' . $recordId . '/'. $relationName . '/' . $relatedRecordId, $putData);
+    }
 
-        return $this->client->post($this->getUrl() . '/' . $relationName . '/' . $relatedRecordId, $data);
+    /**
+     * @param $relationName
+     * @param $relatedRecordId
+     * @param  array  $data
+     * @return array|mixed|string
+     * @throws GrantCodeNotSetException
+     * @throws \Webleit\ZohoCrmApi\Exception\ApiError
+     * @throws \Webleit\ZohoCrmApi\Exception\NonExistingModule
+     */
+    public function getRelatedRecords($recordId, $relationName)
+    {
+        return $this->client->get($this->getUrl() . '/' . $recordId . '/'. $relationName);
     }
 
     /**
