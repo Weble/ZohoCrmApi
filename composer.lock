@@ -1,103 +1,11 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "685bd53734296a55555bf9060a627fba",
+    "content-hash": "7de1491480390fe2d10c36f357c22a3e",
     "packages": [
-        {
-            "name": "bentools/guzzle-throttle-middleware",
-            "version": "0.4.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/bpolaszek/guzzle-throttle-middleware.git",
-                "reference": "81de5e31843f99a99acf88628e5b154580172670"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/bpolaszek/guzzle-throttle-middleware/zipball/81de5e31843f99a99acf88628e5b154580172670",
-                "reference": "81de5e31843f99a99acf88628e5b154580172670",
-                "shasum": ""
-            },
-            "require": {
-                "bentools/psr7-request-matcher": "^1.0",
-                "guzzlehttp/guzzle": "^6.0",
-                "php": ">=7.0",
-                "psr/log": "^1.0"
-            },
-            "require-dev": {
-                "bentools/guzzle-duration-middleware": "^1.0",
-                "phpunit/phpunit": "@stable",
-                "psr/cache": "^1.0",
-                "satooshi/php-coveralls": "@stable",
-                "squizlabs/php_codesniffer": "@stable",
-                "symfony/cache": "^3.3",
-                "symfony/var-dumper": "^3.3"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "BenTools\\GuzzleHttp\\Middleware\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "bpolaszek",
-                    "email": "bpolaszek@gmail.com"
-                }
-            ],
-            "description": "A GuzzleHTTP Middleware that can delay requests before sending them.",
-            "time": "2018-02-16T13:49:05+00:00"
-        },
-        {
-            "name": "bentools/psr7-request-matcher",
-            "version": "1.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/bpolaszek/psr7-request-matcher.git",
-                "reference": "bf7db07be3474586a948fc52dee1214c67915552"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/bpolaszek/psr7-request-matcher/zipball/bf7db07be3474586a948fc52dee1214c67915552",
-                "reference": "bf7db07be3474586a948fc52dee1214c67915552",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3",
-                "psr/http-message": "^1.0"
-            },
-            "require-dev": {
-                "guzzlehttp/psr7": "^1.4",
-                "php": ">=5.4",
-                "phpunit/phpunit": "@stable",
-                "satooshi/php-coveralls": "@stable",
-                "squizlabs/php_codesniffer": "@stable"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "BenTools\\Psr7\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "bpolaszek",
-                    "email": "bpolaszek@gmail.com"
-                }
-            ],
-            "description": "A PSR-7 RequestMatcher interface for use into several projects.",
-            "time": "2018-03-07T10:54:11+00:00"
-        },
         {
             "name": "doctrine/inflector",
             "version": "v1.3.0",
@@ -283,37 +191,32 @@
         },
         {
             "name": "guzzlehttp/psr7",
-            "version": "1.6.1",
+            "version": "1.4.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "239400de7a173fe9901b9ac7c06497751f00727a"
+                "reference": "f5b8a8512e2b58b0071a7280e39f14f72e05d87c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/239400de7a173fe9901b9ac7c06497751f00727a",
-                "reference": "239400de7a173fe9901b9ac7c06497751f00727a",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/f5b8a8512e2b58b0071a7280e39f14f72e05d87c",
+                "reference": "f5b8a8512e2b58b0071a7280e39f14f72e05d87c",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.4.0",
-                "psr/http-message": "~1.0",
-                "ralouphie/getallheaders": "^2.0.5 || ^3.0.0"
+                "psr/http-message": "~1.0"
             },
             "provide": {
                 "psr/http-message-implementation": "1.0"
             },
             "require-dev": {
-                "ext-zlib": "*",
-                "phpunit/phpunit": "~4.8.36 || ^5.7.27 || ^6.5.8"
-            },
-            "suggest": {
-                "zendframework/zend-httphandlerrunner": "Emit PSR-7 responses"
+                "phpunit/phpunit": "~4.0"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.6-dev"
+                    "dev-master": "1.4-dev"
                 }
             },
             "autoload": {
@@ -343,14 +246,13 @@
             "keywords": [
                 "http",
                 "message",
-                "psr-7",
                 "request",
                 "response",
                 "stream",
                 "uri",
                 "url"
             ],
-            "time": "2019-07-01T23:21:34+00:00"
+            "time": "2017-03-20T17:10:46+00:00"
         },
         {
             "name": "psr/cache",
@@ -447,93 +349,6 @@
                 "response"
             ],
             "time": "2016-08-06T14:39:51+00:00"
-        },
-        {
-            "name": "psr/log",
-            "version": "1.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/php-fig/log.git",
-                "reference": "6c001f1daafa3a3ac1d8ff69ee4db8e799a654dd"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/log/zipball/6c001f1daafa3a3ac1d8ff69ee4db8e799a654dd",
-                "reference": "6c001f1daafa3a3ac1d8ff69ee4db8e799a654dd",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.0"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.0.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Psr\\Log\\": "Psr/Log/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "PHP-FIG",
-                    "homepage": "http://www.php-fig.org/"
-                }
-            ],
-            "description": "Common interface for logging libraries",
-            "homepage": "https://github.com/php-fig/log",
-            "keywords": [
-                "log",
-                "psr",
-                "psr-3"
-            ],
-            "time": "2018-11-20T15:27:04+00:00"
-        },
-        {
-            "name": "ralouphie/getallheaders",
-            "version": "3.0.3",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/ralouphie/getallheaders.git",
-                "reference": "120b605dfeb996808c31b6477290a714d356e822"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/ralouphie/getallheaders/zipball/120b605dfeb996808c31b6477290a714d356e822",
-                "reference": "120b605dfeb996808c31b6477290a714d356e822",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.6"
-            },
-            "require-dev": {
-                "php-coveralls/php-coveralls": "^2.1",
-                "phpunit/phpunit": "^5 || ^6.5"
-            },
-            "type": "library",
-            "autoload": {
-                "files": [
-                    "src/getallheaders.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Ralph Khattar",
-                    "email": "ralph.khattar@gmail.com"
-                }
-            ],
-            "description": "A polyfill for getallheaders.",
-            "time": "2019-03-08T08:55:37+00:00"
         },
         {
             "name": "symfony/polyfill-mbstring",
@@ -727,16 +542,16 @@
         },
         {
             "name": "tightenco/collect",
-            "version": "v5.8.34",
+            "version": "v6.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tightenco/collect.git",
-                "reference": "957e430c26c51b65c80acc87896023229dc05a21"
+                "reference": "4aea0cd7acbdff113968c9c4e735532e10ea1393"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tightenco/collect/zipball/957e430c26c51b65c80acc87896023229dc05a21",
-                "reference": "957e430c26c51b65c80acc87896023229dc05a21",
+                "url": "https://api.github.com/repos/tightenco/collect/zipball/4aea0cd7acbdff113968c9c4e735532e10ea1393",
+                "reference": "4aea0cd7acbdff113968c9c4e735532e10ea1393",
                 "shasum": ""
             },
             "require": {
@@ -745,7 +560,7 @@
             },
             "require-dev": {
                 "mockery/mockery": "^1.0",
-                "nesbot/carbon": "^1.26.3",
+                "nesbot/carbon": "^2.23.0",
                 "phpunit/phpunit": "^7.0"
             },
             "type": "library",
@@ -773,48 +588,7 @@
                 "collection",
                 "laravel"
             ],
-            "time": "2019-07-30T19:16:47+00:00"
-        },
-        {
-            "name": "weble/zohoclient",
-            "version": "dev-master",
-            "dist": {
-                "type": "path",
-                "url": "../ZohoAuth",
-                "reference": "9534502833f93e699b20a8fa2501bca3f578ce07",
-                "shasum": null
-            },
-            "require": {
-                "bentools/guzzle-throttle-middleware": "^0.4.0",
-                "guzzlehttp/guzzle": "~6.0",
-                "php": ">=7.0.0",
-                "psr/cache": "^1.0",
-                "tightenco/collect": "^5.7"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "7.*"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Weble\\ZohoClient\\": "src"
-                }
-            },
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniele Rosario",
-                    "email": "daniele@weble.it"
-                }
-            ],
-            "description": "Zoho API Client for oAuth auth and common tasks - PHP SDK",
-            "keywords": [
-                "api",
-                "oauth2",
-                "zoho"
-            ]
+            "time": "2019-09-17T12:13:52+00:00"
         }
     ],
     "packages-dev": [
@@ -2289,11 +2063,9 @@
         }
     ],
     "aliases": [],
-    "minimum-stability": "dev",
-    "stability-flags": {
-        "weble/zohoclient": 20
-    },
-    "prefer-stable": true,
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
         "php": ">=7.0.0"

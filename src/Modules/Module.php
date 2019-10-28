@@ -212,6 +212,44 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
     }
 
     /**
+     * @param $relationName
+     * @param $relatedRecordId
+     * @param  array  $data
+     * @return array|mixed|string
+     * @throws GrantCodeNotSetException
+     * @throws \Webleit\ZohoCrmApi\Exception\ApiError
+     * @throws \Webleit\ZohoCrmApi\Exception\NonExistingModule
+     */
+    public function updateRelatedRecord($recordId, $relationName, $relatedRecordId, $data = [])
+    {
+        $data = array_merge($data, [
+            'id' => $relatedRecordId
+        ]);
+
+        $putData = [
+            'data' => [
+                $data
+            ],
+        ];
+
+        return $this->client->put($this->getUrl() . '/' . $recordId . '/'. $relationName . '/' . $relatedRecordId, $putData);
+    }
+
+    /**
+     * @param $relationName
+     * @param $relatedRecordId
+     * @param  array  $data
+     * @return array|mixed|string
+     * @throws GrantCodeNotSetException
+     * @throws \Webleit\ZohoCrmApi\Exception\ApiError
+     * @throws \Webleit\ZohoCrmApi\Exception\NonExistingModule
+     */
+    public function getRelatedRecords($recordId, $relationName)
+    {
+        return $this->client->get($this->getUrl() . '/' . $recordId . '/'. $relationName);
+    }
+
+    /**
      * Get the url path for the api of this module (ie: /organizations)
      * @return string
      */
