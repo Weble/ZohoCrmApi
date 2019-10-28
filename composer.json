@@ -27,8 +27,8 @@
         }
     },
     "repositories": [{
-        "type": "path",
-        "url": "../ZohoAuth/"
+        "type": "vcs",
+        "url": "git@github.com:weble/zohoclient.git"
     }],
     "minimum-stability": "dev",
     "prefer-stable": true
