@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "21dfdde07409deb6aa0a88f458eefab8",
+    "content-hash": "949de1fa23a43f82d89731c573053d5c",
     "packages": [
         {
             "name": "bentools/guzzle-throttle-middleware",

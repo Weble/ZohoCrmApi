@@ -43,21 +43,15 @@ class Client
      */
     protected $mode;
 
-    /**
-     * @var Region
-     */
-    protected $region;
-
     public function __construct(OAuthClient $oAuthClient, ClientInterface $client = null)
     {
         if (!$client) {
             $client = new \GuzzleHttp\Client();
         }
-        $this->client = $client;
 
+        $this->client = $client;
         $this->oAuthClient = $oAuthClient;
 
-        $this->setRegion(Region::us());
         $this->setMode(Mode::production());
     }
 
@@ -125,6 +119,12 @@ class Client
     public function euRegion(): self
     {
         return $this->setRegion(Region::eu());
+    }
+
+    public function setRegion(Region $region): self
+    {
+        $this->oAuthClient->setRegion($region);
+        return $this;
     }
 
     /**
@@ -269,12 +269,6 @@ class Client
     public function getRegion(): Region
     {
         return $this->oAuthClient->getRegion();
-    }
-
-    public function setRegion(Region $region): self
-    {
-        $this->oAuthClient->setRegion($region);
-        return $this;
     }
 
     /**
