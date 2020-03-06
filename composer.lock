@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "949de1fa23a43f82d89731c573053d5c",
+    "content-hash": "c33814ab275303dbb5ecc2110f93257f",
     "packages": [
         {
             "name": "bentools/guzzle-throttle-middleware",
@@ -1093,16 +1093,16 @@
         },
         {
             "name": "weble/zohoclient",
-            "version": "3.0.0",
+            "version": "3.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Weble/ZohoClient.git",
-                "reference": "658b28b24257e1994b4a3004d55cae5b3c049948"
+                "reference": "a60efdb0feaa273dede558f7906a323e05dcd933"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Weble/ZohoClient/zipball/658b28b24257e1994b4a3004d55cae5b3c049948",
-                "reference": "658b28b24257e1994b4a3004d55cae5b3c049948",
+                "url": "https://api.github.com/repos/Weble/ZohoClient/zipball/a60efdb0feaa273dede558f7906a323e05dcd933",
+                "reference": "a60efdb0feaa273dede558f7906a323e05dcd933",
                 "shasum": ""
             },
             "require": {
@@ -1143,7 +1143,7 @@
                 "api",
                 "oauth2"
             ],
-            "time": "2020-03-06T09:11:29+00:00"
+            "time": "2020-03-06T11:34:43+00:00"
         }
     ],
     "packages-dev": [
