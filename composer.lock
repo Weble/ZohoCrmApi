@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "51247cd7e0413a8652c9bbfb4c9c3487",
+    "content-hash": "21dfdde07409deb6aa0a88f458eefab8",
     "packages": [
         {
             "name": "bentools/guzzle-throttle-middleware",
@@ -1093,11 +1093,17 @@
         },
         {
             "name": "weble/zohoclient",
-            "version": "dev-master",
-            "dist": {
-                "type": "path",
-                "url": "../ZohoClient",
+            "version": "3.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Weble/ZohoClient.git",
                 "reference": "658b28b24257e1994b4a3004d55cae5b3c049948"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Weble/ZohoClient/zipball/658b28b24257e1994b4a3004d55cae5b3c049948",
+                "reference": "658b28b24257e1994b4a3004d55cae5b3c049948",
+                "shasum": ""
             },
             "require": {
                 "bentools/guzzle-throttle-middleware": "^0.4.0",
@@ -1121,6 +1127,7 @@
                     "Weble\\ZohoClient\\": "src"
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -1132,10 +1139,11 @@
             ],
             "description": "Zoho API Client for oAuth auth and common tasks - PHP SDK",
             "keywords": [
+                "Zoho",
                 "api",
-                "oauth2",
-                "zoho"
-            ]
+                "oauth2"
+            ],
+            "time": "2020-03-06T09:11:29+00:00"
         }
     ],
     "packages-dev": [
@@ -2610,13 +2618,11 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "weble/zohoclient": 20
-    },
+    "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=7.0.0"
+        "php": ">=7.2.0"
     },
     "platform-dev": []
 }
