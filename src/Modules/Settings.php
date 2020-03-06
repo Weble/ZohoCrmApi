@@ -31,19 +31,14 @@ class Settings implements \Webleit\ZohoCrmApi\Contracts\ProvidesModules
      * @var array
      */
     protected $availableModules = [
-        'modules' => Settings\Modules::class,
-        'roles' => Settings\Roles::class,
-        'profiles' => Settings\Profiles::class,
-        'fields' => Settings\Fields::class,
-        'layouts' => Settings\Layouts::class,
+        'modules'      => Settings\Modules::class,
+        'roles'        => Settings\Roles::class,
+        'profiles'     => Settings\Profiles::class,
+        'fields'       => Settings\Fields::class,
+        'layouts'      => Settings\Layouts::class,
         'relatedlists' => Settings\RelatedLists::class,
-        'customviews' => Settings\CustomViews::class
+        'customviews'  => Settings\CustomViews::class
     ];
-
-    /**
-     * @var string
-     */
-    protected $modulesNamespace = '\\Webleit\\ZohoCrmApi\\Modules\\Settings\\';
 
     /**
      * Settings constructor.
