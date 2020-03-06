@@ -19,6 +19,7 @@ require './vendor/autoload.php';
 $oAuthClient = new \Weble\ZohoClient\OAuthClient('[CLIENT_ID]', '[CLIENT_SECRET]');
 $oAuthClient->setRefreshToken('[REFRESH_TOKEN]');
 $oAuthClient->setRegion(\Weble\ZohoClient\Enums\Region::us());
+$oAuthClient->useCache($yourPSR6CachePool);
 
 // setup the zoho crm client
 $client = new \Webleit\ZohoCrmApi\Client($oAuthClient);
