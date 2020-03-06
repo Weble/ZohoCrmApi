@@ -2,6 +2,7 @@
 
 namespace Webleit\ZohoCrmApi\Modules;
 
+use Webleit\ZohoCrmApi\Models\User;
 use Webleit\ZohoCrmApi\Modules\Settings as SettingsModules;
 
 /**
@@ -25,6 +26,6 @@ class Users extends Module
      */
     public function getModelClassName()
     {
-        return \Webleit\ZohoCrmApi\Models\User::class;
+        return User::class;
     }
 }

@@ -5,38 +5,23 @@ namespace Webleit\ZohoCrmApi;
 use BenTools\GuzzleHttp\Middleware\Storage\Adapter\ArrayAdapter;
 use BenTools\GuzzleHttp\Middleware\ThrottleConfiguration;
 use BenTools\GuzzleHttp\Middleware\ThrottleMiddleware;
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\HandlerStack;
-use Psr\Cache\CacheItemPoolInterface;
 use Psr\Http\Message\ResponseInterface;
+use Weble\ZohoClient\Enums\Region;
 use Weble\ZohoClient\OAuthClient;
+use Webleit\ZohoCrmApi\Enums\Mode;
 use Webleit\ZohoCrmApi\Exception\ApiError;
-use Webleit\ZohoCrmApi\Exception\GrantCodeNotSetException;
 use Webleit\ZohoCrmApi\Exception\NonExistingModule;
 use Webleit\ZohoCrmApi\Request\RequestMatcher;
 
-/**
- * Class Client
- * @see https://github.com/opsway/zohobooks-api
- * @package Webleit\ZohoBooksApi
- */
 class Client
 {
-    const ZOHOCRM_API_URL_PRODUCTION_US = "https://www.zohoapis.com/crm/v2/";
-    const ZOHOCRM_API_URL_PRODUCTION_EU = "https://www.zohoapis.eu/crm/v2/";
-    const ZOHOCRM_API_URL_PRODUCTION_CN = "https://www.zohoapis.cn/crm/v2/";
-
-    const ZOHOCRM_API_URL_DEVELOPER_US = "https://developer.zoho.com/crm/v2/";
-    const ZOHOCRM_API_URL_DEVELOPER_EU = "https://developer.zoho.eu/crm/v2/";
-    const ZOHOCRM_API_URL_DEVELOPER_CN = "https://developer.zoho.cn/crm/v2/";
-
-    const ZOHOCRM_API_URL_SANDBOX_US = "https://crmsandbox.zoho.com/crm/v2/";
-    const ZOHOCRM_API_URL_SANDBOX_EU = "https://crmsandbox.zoho.eu/crm/v2/";
-    const ZOHOCRM_API_URL_SANDBOX_CN = "https://crmsandbox.zoho.cn/crm/v2/";
-
-    const MODE_PRODUCTION = 'production';
-    const MODE_DEVELOPER = 'developer';
-    const MODE_SANDBOX = 'sandbox';
+    const ZOHOCRM_API_URL_PATH = "/crm/v2/";
+    const ZOHOCRM_API_PRODUCION_PARTIAL_HOST = "https://www.zohoapis";
+    const ZOHOCRM_API_DEVELOPER_PARTIAL_HOST = "https://developer.zoho";
+    const ZOHOCRM_API_SANDBOX_PARTIAL_HOST = "https://crmsandbox.zoho";
 
     /**
      * @var bool
@@ -54,48 +39,39 @@ class Client
     protected $oAuthClient;
 
     /**
-     * @var string
+     * @var Mode
      */
-    protected $mode = self::MODE_PRODUCTION;
+    protected $mode;
 
     /**
-     * @var string
+     * @var Region
      */
-    protected $dc = OAuthClient::DC_US;
+    protected $region;
 
-    /**
-     * Client constructor.
-     *
-     * @param $clientId
-     * @param $clientSecret
-     * @param $refreshToken
-     */
-    public function __construct($clientId, $clientSecret, $refreshToken = null)
+    public function __construct(OAuthClient $oAuthClient, ClientInterface $client = null)
     {
-        $this->client = new \GuzzleHttp\Client();
-        $this->oAuthClient = new OAuthClient($clientId, $clientSecret, $refreshToken);
-        $this->oAuthClient->setRefreshToken($refreshToken);
+        if (!$client) {
+            $client = new \GuzzleHttp\Client();
+        }
+        $this->client = $client;
+
+        $this->oAuthClient = $oAuthClient;
+
+        $this->setRegion(Region::us());
+        $this->setMode(Mode::production());
     }
 
-    /**
-     * @param $name
-     * @param $arguments
-     * @return mixed
-     */
     public function __call($name, $arguments)
     {
-        return call_user_func_array([$this->oAuthClient, $name], $arguments);
+        return call_user_func_array([
+            $this->oAuthClient,
+            $name
+        ], $arguments);
     }
 
-    /**
-     * @param  bool  $maxRequests
-     * @param  bool  $duration
-     *
-     * @return $this
-     */
-    public function throttle($maxRequests = false, $duration = false)
+    public function throttle(int $maxRequests = 0, float $duration = 0): self
     {
-        $this->throttle = $maxRequests ? true : false;
+        $this->throttle = ($maxRequests > 0) ? true : false;
 
         if ($this->throttle) {
             $this->enableThrottling($maxRequests, $duration);
@@ -106,180 +82,129 @@ class Client
         return $this;
     }
 
-    /**
-     * @param $maxRequests
-     * @param $duration
-     */
-    protected function enableThrottling($maxRequests, $duration)
+    protected function enableThrottling(int $maxRequests, float $duration): self
     {
         $stack = HandlerStack::create();
         $middleware = new ThrottleMiddleware(new ArrayAdapter());
 
-        $middleware->registerConfiguration(
-            new ThrottleConfiguration(new RequestMatcher(), $maxRequests, $duration, 'zoho')
-        );
+        $middleware->registerConfiguration(new ThrottleConfiguration(new RequestMatcher(), $maxRequests, $duration, 'zoho'));
 
         $stack->push($middleware, 'throttle');
-        $this->client = new \GuzzleHttp\Client([
-            'handler' => $stack
-        ]);
-    }
+        $this->client = new \GuzzleHttp\Client(['handler' => $stack]);
 
-    /**
-     * @return $this
-     */
-    public function developerMode()
-    {
-        $this->mode = self::MODE_DEVELOPER;
         return $this;
     }
 
     /**
-     * @return $this
+     * @deprecated
      */
-    public function productionMode()
+    public function developerMode(): self
     {
-        $this->mode = self::MODE_PRODUCTION;
-        return $this;
+        return $this->setMode(Mode::developer());
     }
 
     /**
-     * @return $this
+     * @deprecated
      */
-    public function sandboxMode()
+    public function productionMode(): self
     {
-        $this->mode = self::MODE_SANDBOX;
-        return $this;
+        return $this->setMode(Mode::production());
     }
 
     /**
-     * @return string
+     * @deprecated
      */
-    public function getMode()
+    public function sandboxMode(): self
     {
-        return $this->mode;
+        return $this->setMode(Mode::sandbox());
     }
 
     /**
-     * @return $this
+     * @deprecated
      */
-    public function euRegion()
+    public function euRegion(): self
     {
-        $this->dc = OAuthClient::DC_EU;
-        $this->oAuthClient->euRegion();
-        return $this;
-    }
-
-    public function inRegion()
-    {
-        $this->dc = OAuthClient::DC_IN;
-        $this->oAuthClient->inRegion();
-        return $this;
+        return $this->setRegion(Region::eu());
     }
 
     /**
-     * @return $this
+     * @deprecated
      */
-    public function usRegion()
+    public function inRegion(): self
     {
-        $this->dc = OAuthClient::DC_US;
-        $this->oAuthClient->usRegion();
-        return $this;
+        return $this->setRegion(Region::in());
     }
 
     /**
-     * @return $this
+     * @deprecated
      */
-    public function cnRegion()
+    public function usRegion(): self
     {
-        $this->dc = OAuthClient::DC_CN;
-        $this->oAuthClient->cnRegion();
-        return $this;
+        return $this->setRegion(Region::us());
     }
 
     /**
-     * @return string
+     * @deprecated
      */
-    public function getUrl()
+    public function cnRegion(): self
     {
-        switch ($this->mode) {
-            case self::MODE_DEVELOPER:
-                switch ($this->dc) {
-                    case OAuthClient::DC_CN:
-                        return self::ZOHOCRM_API_URL_DEVELOPER_CN;
-                        break;
-                    case OAuthClient::DC_EU:
-                        return self::ZOHOCRM_API_URL_DEVELOPER_EU;
-                        break;
-                    case OAuthClient::DC_US:
-                    default:
-                        return self::ZOHOCRM_API_URL_DEVELOPER_US;
-                        break;
-                }
+        return $this->setRegion(Region::cn());
+    }
 
-                break;
-            case self::MODE_SANDBOX:
-                switch ($this->dc) {
-                    case OAuthClient::DC_CN:
-                        return self::ZOHOCRM_API_URL_SANDBOX_CN;
-                        break;
-                    case OAuthClient::DC_EU:
-                        return self::ZOHOCRM_API_URL_SANDBOX_EU;
-                        break;
-                    case OAuthClient::DC_US:
-                    default:
-                        return self::ZOHOCRM_API_URL_SANDBOX_US;
-                        break;
-                }
+    public function getList(string $uri, array $params = [], int $start = 1, int $limit = 10, string $orderBy = 'created_time', string $orderDir = 'DESC', array $search = []): array
+    {
+        $pageContext = $this->getPageContext($start, $limit, $orderBy, $orderDir, $search);
 
-                break;
-            case self::MODE_PRODUCTION:
-            default:
-                switch ($this->dc) {
-                    case OAuthClient::DC_CN:
-                        return self::ZOHOCRM_API_URL_PRODUCTION_CN;
-                        break;
-                    case OAuthClient::DC_EU:
-                        return self::ZOHOCRM_API_URL_PRODUCTION_EU;
-                        break;
-                    case OAuthClient::DC_US:
-                    default:
-                        return self::ZOHOCRM_API_URL_PRODUCTION_US;
-                        break;
-                }
+        $params = array_merge($params, ['data' => json_encode($pageContext)]);
 
-                break;
-        }
+        $response = $this->call($uri, 'GET', ['query' => $params]);
+
+        $body = $response->getBody();
+
+        $data = json_decode($body, true);
+
+        return $data;
+    }
+
+    protected function getPageContext(int $start = 1, int $limit = 10, string $orderBy = 'created_time', string $orderDir = 'DESC', array $search = [])
+    {
+        return [
+            'page_context' => [
+                'row_count'   => $limit,
+                'start_index' => $start,
+                //'search_columns' => $search,
+                'sort_column' => $orderBy,
+                'sort_order'  => $orderDir
+            ]
+        ];
     }
 
     /**
-     * @param $uri
-     * @param $method
-     * @param  array  $data
-     *
-     * @return mixed
-     * @throws ApiError
-     * @throws GrantCodeNotSetException
      * @throws NonExistingModule
+     * @throws \Weble\ZohoClient\Exception\AccessDeniedException
+     * @throws \Weble\ZohoClient\Exception\ApiError
+     * @throws \Weble\ZohoClient\Exception\CannotGenerateAccessToken
+     * @throws \Weble\ZohoClient\Exception\CannotGenerateRefreshToken
+     * @throws \Weble\ZohoClient\Exception\GrantCodeNotSetException
+     * @throws \Weble\ZohoClient\Exception\InvalidGrantCodeException
+     * @throws \Weble\ZohoClient\Exception\RefreshTokenNotSet
      */
-    public function call($uri, $method, $data = [])
+    public function call(string $uri, string $method, array $data = [])
     {
         $options = array_merge([
-            'query' => [],
+            'query'       => [],
             'form_params' => [],
-            'json' => [],
-            'headers' => [
-                'Authorization' => 'Zoho-oauthtoken '.$this->oAuthClient->getAccessToken()
-            ]
+            'json'        => [],
+            'headers'     => ['Authorization' => 'Zoho-oauthtoken ' . $this->oAuthClient->getAccessToken()]
         ], $data);
 
         try {
-            return $this->client->$method($this->getUrl().$uri, $options);
+            return $this->client->$method($this->getUrl() . $uri, $options);
         } catch (ClientException $e) {
 
             // Retry?
             if ($e->getCode() === 401) {
-                $this->oAuthClient->generateAccessToken();
+                $this->oAuthClient->generateTokens()->getAccessToken();
                 return $this->call($uri, $method, $data);
             }
 
@@ -298,7 +223,10 @@ class Client
                 throw $e;
             }
 
-            if (in_array($response->code, ['INVALID_MODULE', 'INVALID_URL_PATTERN'])) {
+            if (in_array($response->code, [
+                'INVALID_MODULE',
+                'INVALID_URL_PATTERN'
+            ])) {
                 throw new NonExistingModule($response->message);
             }
 
@@ -306,132 +234,71 @@ class Client
         }
     }
 
-    /**
-     * @param $uri
-     * @param $params
-     * @param $start
-     * @param $limit
-     * @param $orderBy
-     * @param $orderDir
-     * @param  array  $search
-     *
-     * @return mixed
-     * @throws ApiError
-     * @throws GrantCodeNotSetException
-     */
-    public function getList(
-        $uri,
-        $params = [],
-        $start = 1,
-        $limit = 10,
-        $orderBy = 'created_time',
-        $orderDir = 'DESC',
-        $search = []
-    ) {
-        $pageContext = $this->getPageContext($start, $limit, $orderBy, $orderDir, $search);
-
-        $params = array_merge($params, [
-            'data' => json_encode($pageContext)
-        ]);
-
-        $response = $this->call($uri, 'GET', ['query' => $params]);
-
-        $body = $response->getBody();
-
-        $data = json_decode($body, true);
-
-        return $data;
-    }
-
-    /**
-     * @param $url
-     * @param  null  $id
-     * @param  array  $params
-     *
-     * @return array|mixed|string
-     * @throws ApiError
-     * @throws GrantCodeNotSetException
-     */
-    public function get($url, $id = null, $params = [])
+    public function getUrl(): string
     {
-        if ($id !== null) {
-            $url .= '/'.$id;
+        switch ($this->getMode()) {
+            case Mode::developer():
+                $apiUrl = self::ZOHOCRM_API_DEVELOPER_PARTIAL_HOST;
+                break;
+            case Mode::sandbox():
+                $apiUrl = self::ZOHOCRM_API_SANDBOX_PARTIAL_HOST;
+                break;
+            case Mode::production():
+            default:
+                $apiUrl = self::ZOHOCRM_API_PRODUCION_PARTIAL_HOST;
+                break;
         }
 
-        return $this->processResult(
-            $this->call($url, 'GET', ['query' => $params])
-        );
+        $apiUrl .= $this->getRegion()->getValue();
+        $apiUrl .= self::ZOHOCRM_API_URL_PATH;
+
+        return $apiUrl;
+    }
+
+    public function getMode(): Mode
+    {
+        return $this->mode;
+    }
+
+    public function setMode(Mode $mode): self
+    {
+        $this->mode = $mode;
+        return $this;
+    }
+
+    public function getRegion(): Region
+    {
+        return $this->oAuthClient->getRegion();
+    }
+
+    public function setRegion(Region $region): self
+    {
+        $this->oAuthClient->setRegion($region);
+        return $this;
     }
 
     /**
-     * @param $url
-     * @param  array  $params
-     * @param  array  $queryParams
-     *
-     * @return array|mixed|string
      * @throws ApiError
-     * @throws GrantCodeNotSetException
      * @throws NonExistingModule
+     * @throws \Weble\ZohoClient\Exception\AccessDeniedException
+     * @throws \Weble\ZohoClient\Exception\ApiError
+     * @throws \Weble\ZohoClient\Exception\CannotGenerateAccessToken
+     * @throws \Weble\ZohoClient\Exception\CannotGenerateRefreshToken
+     * @throws \Weble\ZohoClient\Exception\GrantCodeNotSetException
+     * @throws \Weble\ZohoClient\Exception\InvalidGrantCodeException
+     * @throws \Weble\ZohoClient\Exception\RefreshTokenNotSet
      */
-    public function post($url, $params = [], $queryParams = [])
+    public function get(string $url, string $id = null, array $params = [])
     {
-        return $this->processResult(
-            $this->call($url, 'POST', [
-                'query' => $queryParams,
-                'json' => $params
-            ])
-        );
+        if ($id !== null) {
+            $url .= '/' . $id;
+        }
+
+        return $this->processResult($this->call($url, 'GET', ['query' => $params]));
     }
 
     /**
-     * @param $url
-     * @param  array  $params
-     * @param  array  $queryParams
-     *
-     * @return array|mixed|string
-     * @throws \Webleit\ZohoCrmApi\Exception\ApiError
-     * @throws \Webleit\ZohoCrmApi\Exception\GrantCodeNotSetException
-     * @throws \Webleit\ZohoCrmApi\Exception\NonExistingModule
-     */
-    public function put($url, $params = [], $queryParams = [])
-    {
-        return $this->processResult(
-            $this->call($url, 'PUT', [
-                'query' => $queryParams,
-                'json' => $params
-            ])
-        );
-    }
-
-    /**
-     * @param  int  $start
-     * @param  int  $limit
-     * @param  string  $orderBy
-     * @param  string  $orderDir
-     * @param  array  $search
-     *
-     * @return array
-     */
-    protected function getPageContext(
-        $start = 1,
-        $limit = 10,
-        $orderBy = 'created_time',
-        $orderDir = 'DESC',
-        $search = []
-    ) {
-        return [
-            'page_context' => [
-                'row_count' => $limit,
-                'start_index' => $start,
-                //'search_columns' => $search,
-                'sort_column' => $orderBy,
-                'sort_order' => $orderDir
-            ]
-        ];
-    }
-
-    /**
-     * @param  ResponseInterface  $response
+     * @param ResponseInterface $response
      *
      * @return array|mixed|string
      * @throws ApiError
@@ -440,7 +307,7 @@ class Client
     {
         // All ok, probably not json, like PDF?
         if ($response->getStatusCode() < 200 || $response->getStatusCode() > 299) {
-            throw new ApiError('Response from Zoho is not success. Message: '.$response->getReasonPhrase());
+            throw new ApiError('Response from Zoho is not success. Message: ' . $response->getReasonPhrase());
         }
 
         try {
@@ -449,40 +316,65 @@ class Client
 
             // All ok, probably not json, like PDF?
             if ($response->getStatusCode() >= 200 && $response->getStatusCode() <= 299) {
-                return (string) $response->getBody();
+                return (string)$response->getBody();
             }
 
-            throw new ApiError('Response from Zoho is not success. Message: '.$response->getReasonPhrase());
+            throw new ApiError('Response from Zoho is not success. Message: ' . $response->getReasonPhrase());
         }
 
         if (!$result) {
             // All ok, probably not json, like PDF?
             if ($response->getStatusCode() >= 200 && $response->getStatusCode() <= 299) {
-                return (string) $response->getBody();
+                return (string)$response->getBody();
             }
 
-            throw new ApiError('Response from Zoho is not success. Message: '.$response->getReasonPhrase());
+            throw new ApiError('Response from Zoho is not success. Message: ' . $response->getReasonPhrase());
         }
 
         return $result;
     }
 
     /**
-     * @return \GuzzleHttp\Client
+     * @return array|mixed|string
+     * @throws ApiError
+     * @throws NonExistingModule
+     * @throws \Weble\ZohoClient\Exception\AccessDeniedException
+     * @throws \Weble\ZohoClient\Exception\ApiError
+     * @throws \Weble\ZohoClient\Exception\CannotGenerateAccessToken
+     * @throws \Weble\ZohoClient\Exception\CannotGenerateRefreshToken
+     * @throws \Weble\ZohoClient\Exception\GrantCodeNotSetException
+     * @throws \Weble\ZohoClient\Exception\InvalidGrantCodeException
+     * @throws \Weble\ZohoClient\Exception\RefreshTokenNotSet
      */
-    public function getHttpClient(): \GuzzleHttp\Client
+    public function post(string $url, array $params = [], array $queryParams = [])
     {
-        return $this->client;
+        return $this->processResult($this->call($url, 'POST', [
+            'query' => $queryParams,
+            'json'  => $params
+        ]));
     }
 
     /**
-     * @param  CacheItemPoolInterface  $cacheItemPool
-     *
-     * @return $this
+     * @throws ApiError
+     * @throws NonExistingModule
+     * @throws \Weble\ZohoClient\Exception\AccessDeniedException
+     * @throws \Weble\ZohoClient\Exception\ApiError
+     * @throws \Weble\ZohoClient\Exception\CannotGenerateAccessToken
+     * @throws \Weble\ZohoClient\Exception\CannotGenerateRefreshToken
+     * @throws \Weble\ZohoClient\Exception\GrantCodeNotSetException
+     * @throws \Weble\ZohoClient\Exception\InvalidGrantCodeException
+     * @throws \Weble\ZohoClient\Exception\RefreshTokenNotSet
      */
-    public function useCache(CacheItemPoolInterface $cacheItemPool)
+    public function put(string $url, array $params = [], array $queryParams = [])
     {
-        $this->oAuthClient->useCache($cacheItemPool);
-        return $this;
+        return $this->processResult($this->call($url, 'PUT', [
+            'query' => $queryParams,
+            'json'  => $params
+        ]));
+    }
+
+    public function getHttpClient(): \GuzzleHttp\Client
+    {
+        return $this->client;
     }
 }

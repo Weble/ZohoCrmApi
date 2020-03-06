@@ -2,8 +2,14 @@
 
 namespace Webleit\ZohoCrmApi\Test;
 
+use Cache\Adapter\Filesystem\FilesystemCachePool;
+use League\Flysystem\Adapter\Local;
+use League\Flysystem\Filesystem;
 use PHPUnit\Framework\TestCase;
+use Weble\ZohoClient\Enums\Region;
+use Weble\ZohoClient\OAuthClient;
 use Webleit\ZohoCrmApi\Client;
+use Webleit\ZohoCrmApi\Enums\Mode;
 use Webleit\ZohoCrmApi\Exception\NonExistingModule;
 use Webleit\ZohoCrmApi\Models\Request;
 use Webleit\ZohoCrmApi\Models\Settings\Layout;
@@ -12,10 +18,6 @@ use Webleit\ZohoCrmApi\Models\User;
 use Webleit\ZohoCrmApi\Modules\Records;
 use Webleit\ZohoCrmApi\ZohoCrm;
 
-/**
- * Class ClassNameGeneratorTest
- * @package Webleit\ZohoBooksApi\Test
- */
 class ApiTest extends TestCase
 {
     /**
@@ -33,30 +35,40 @@ class ApiTest extends TestCase
      */
     public static function setUpBeforeClass()
     {
+        $oAuthClient = self::createOAuthClient();
+        $client = new Client($oAuthClient);
+        $client->throttle(1, 1);
+        $client->setMode(Mode::sandbox());
 
-        $authFile = __DIR__.'/config.example.json';
-        if (file_exists(__DIR__.'/config.json')) {
-            $authFile = __DIR__.'/config.json';
+        self::$client = $client;
+        self::$zoho = new ZohoCrm($client);
+    }
+
+    protected static function createOAuthClient(): OAuthClient
+    {
+        $authFile = __DIR__ . '/config.example.json';
+        if (file_exists(__DIR__ . '/config.json')) {
+            $authFile = __DIR__ . '/config.json';
         }
 
         $auth = json_decode(file_get_contents($authFile));
 
-        $client = new ZohoCrm($auth->client_id, $auth->client_secret);
+        $region = Region::us();
+        if ($auth->region) {
+            $region = Region::make($auth->region);
+        }
+
+        $filesystemAdapter = new Local(sys_get_temp_dir());
+        $filesystem        = new Filesystem($filesystemAdapter);
+        $pool = new FilesystemCachePool($filesystem);
+
+        $client = new OAuthClient($auth->client_id, $auth->client_secret);
         $client->setRefreshToken($auth->refresh_token);
-        $client->throttle(1, 1);
+        $client->setRegion($region);
+        $client->offlineMode();
+        $client->useCache($pool);
 
-        self::$client = $client->getClient()->usRegion()->developerMode();
-        self::$zoho = $client;
-    }
-
-    /**
-     * @test
-     */
-    public function hasAccessToken()
-    {
-        $accessToken = self::$client->getAccessToken();
-        $this->assertTrue(strlen($accessToken) > 0);
-        $this->assertFalse(self::$client->accessTokenExpired());
+        return $client;
     }
 
     /**
@@ -165,8 +177,8 @@ class ApiTest extends TestCase
         /** @var Records $leadModule */
         $leadModule = self::$zoho->leads;
         $response = $leadModule->create([
-            'Company' => 'Alpha ltd',
-            'Last_Name' => 'Doe',
+            'Company'    => 'Alpha ltd',
+            'Last_Name'  => 'Doe',
             'First_Name' => 'John'
         ]);
 
@@ -205,16 +217,18 @@ class ApiTest extends TestCase
     {
         $data = [
             [
-                'Company' => 'Alpha ltd',
-                'Last_Name' => 'Doe',
+                'Company'    => 'Alpha ltd',
+                'Last_Name'  => 'Doe',
                 'First_Name' => 'John'
-            ], [
-                'Company' => 'Alpha ltd',
-                'Last_Name' => 'Doe',
+            ],
+            [
+                'Company'    => 'Alpha ltd',
+                'Last_Name'  => 'Doe',
                 'First_Name' => 'John'
-            ], [
-                'Company' => 'Beta ltd',
-                'Last_Name' => 'Doe',
+            ],
+            [
+                'Company'    => 'Beta ltd',
+                'Last_Name'  => 'Doe',
                 'First_Name' => 'John'
             ]
         ];
@@ -241,15 +255,18 @@ class ApiTest extends TestCase
     {
         $data = [
             [
-                'Company' => 'Alpha ltd',
-                'Last_Name' => 'Doe',
+                'Company'    => 'Alpha ltd',
+                'Last_Name'  => 'Doe',
                 'First_Name' => 'John'
-            ], [
-                'Company' => 'Alpha ltd',
-                'First_Name' => 'John' // This one misses last name, and will fail
-            ], [
-                'Company' => 'Beta ltd',
-                'Last_Name' => 'Doe',
+            ],
+            [
+                'Company'    => 'Alpha ltd',
+                'First_Name' => 'John'
+                // This one misses last name, and will fail
+            ],
+            [
+                'Company'    => 'Beta ltd',
+                'Last_Name'  => 'Doe',
                 'First_Name' => 'John'
             ]
         ];
@@ -331,12 +348,12 @@ class ApiTest extends TestCase
         ]);
 
         $response = $module->create([
-            'Subject' => '123',
+            'Subject'         => '123',
             'Product_Details' => [
                 [
-                    'product' => $product->getId(),
+                    'product'    => $product->getId(),
                     'Unit_Price' => 10,
-                    'quantity' => 2
+                    'quantity'   => 2
                 ]
             ]
         ]);

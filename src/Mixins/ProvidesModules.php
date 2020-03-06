@@ -2,12 +2,10 @@
 
 namespace Webleit\ZohoCrmApi\Mixins;
 
-use Doctrine\Common\Inflector\Inflector;
+use Tightenco\Collect\Support\Collection;
 
 trait ProvidesModules
 {
-
-
     /**
      * Proxy any module call to the right api call
      * @param $name
@@ -15,18 +13,16 @@ trait ProvidesModules
      */
     public function createModule($name)
     {
-        if (in_array($name, array_keys($this->availableModules))) {
-            $class =  $this->availableModules[$name];
+        if ($this->getAvailableModules()->has($name)) {
+            $class = $this->getAvailableModules()->get($name);
             return new $class($this->client);
         }
+
+        return null;
     }
 
-    /**
-     * Get the list of available modules
-     * @return array
-     */
-    public function getAvailableModules()
+    public function getAvailableModules(): Collection
     {
-        return $this->availableModules;
+        return ($this->availableModules instanceof Collection) ? $this->availableModules : collect($this->availableModules);
     }
 }
