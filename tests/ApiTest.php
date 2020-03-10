@@ -281,6 +281,26 @@ class ApiTest extends TestCase
 
     }
 
+
+    /**
+     * @test
+     */
+    public function canConvertLead()
+    {
+        $leadModule = self::$zoho->leads;
+        $response = $leadModule->create([
+            'Company'    => 'Alpha ltd',
+            'Last_Name'  => 'Doe',
+            'First_Name' => 'John'
+        ]);
+
+        $conversions = $leadModule->convertLead($response->getId());
+
+        $this->assertArrayHasKey('Contacts', $conversions);
+        $this->assertArrayHasKey('Accounts', $conversions);
+        $this->assertArrayHasKey('Deals', $conversions);
+    }
+
     /**
      * @test
      */
