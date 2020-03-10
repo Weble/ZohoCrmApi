@@ -234,7 +234,7 @@ class Client
         }
     }
 
-    public function getUrl(): string
+    public function getBaseUrl(): string
     {
         switch ($this->getMode()) {
             case Mode::developer():
@@ -249,10 +249,12 @@ class Client
                 break;
         }
 
-        $apiUrl .= $this->getRegion()->getValue();
-        $apiUrl .= self::ZOHOCRM_API_URL_PATH;
+        return $apiUrl . $this->getRegion()->getValue();
+    }
 
-        return $apiUrl;
+    public function getUrl(): string
+    {
+        return $this->getBaseUrl() . self::ZOHOCRM_API_URL_PATH;
     }
 
     public function getMode(): Mode
@@ -365,6 +367,23 @@ class Client
             'query' => $queryParams,
             'json'  => $params
         ]));
+    }
+
+    /**
+     * @return bool
+     * @throws ApiError
+     * @throws NonExistingModule
+     * @throws \Weble\ZohoClient\Exception\AccessDeniedException
+     * @throws \Weble\ZohoClient\Exception\ApiError
+     * @throws \Weble\ZohoClient\Exception\CannotGenerateAccessToken
+     * @throws \Weble\ZohoClient\Exception\CannotGenerateRefreshToken
+     * @throws \Weble\ZohoClient\Exception\GrantCodeNotSetException
+     * @throws \Weble\ZohoClient\Exception\InvalidGrantCodeException
+     * @throws \Weble\ZohoClient\Exception\RefreshTokenNotSet
+     */
+    public function delete(string $url, $id)
+    {
+        return $this->processResult($this->call($url . '/' . $id, 'DELETE'));
     }
 
     public function getHttpClient(): \GuzzleHttp\Client
