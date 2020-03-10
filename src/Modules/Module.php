@@ -330,10 +330,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
      */
     public function doAction($id, $action, $data = [], $params = [])
     {
-        $this->client->post($this->getUrl() . '/' . $id . '/' . $action, null, $data, $params);
-
-        // If we arrive here without exceptions, everything went well
-        return true;
+        return $this->client->post($this->getUrl() . '/' . $id . '/actions/' . $action, $data, $params);
     }
 
     /**

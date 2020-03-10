@@ -13,6 +13,7 @@ use Webleit\ZohoCrmApi\Modules\Records;
  * @property-read Modules\Users $users
  * @property-read Modules\Org $org
  * @property-read Records $records
+ * @property-read Modules\Leads $leads
  */
 class ZohoCrm implements Contracts\ProvidesModules
 {
@@ -35,7 +36,8 @@ class ZohoCrm implements Contracts\ProvidesModules
         'settings' => Modules\Settings::class,
         'users'    => Modules\Users::class,
         'org'      => Modules\Org::class,
-        'records'  => Records::class
+        'records'  => Records::class,
+        'leads'    => Modules\Leads::class
     ];
 
     /**
