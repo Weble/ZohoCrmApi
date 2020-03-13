@@ -855,16 +855,16 @@
         },
         {
             "name": "spatie/enum",
-            "version": "2.3.5",
+            "version": "2.3.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/enum.git",
-                "reference": "6111809e57f14c773d2a73556f5c7878433bbec2"
+                "reference": "b5509f8cb66cbde2725ba89d59ee56a6e145dc3f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/enum/zipball/6111809e57f14c773d2a73556f5c7878433bbec2",
-                "reference": "6111809e57f14c773d2a73556f5c7878433bbec2",
+                "url": "https://api.github.com/repos/spatie/enum/zipball/b5509f8cb66cbde2725ba89d59ee56a6e145dc3f",
+                "reference": "b5509f8cb66cbde2725ba89d59ee56a6e145dc3f",
                 "shasum": ""
             },
             "require": {
@@ -905,7 +905,7 @@
                 "enumerable",
                 "spatie"
             ],
-            "time": "2020-02-11T10:20:59+00:00"
+            "time": "2020-03-11T10:18:34+00:00"
         },
         {
             "name": "symfony/polyfill-mbstring",
