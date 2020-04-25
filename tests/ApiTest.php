@@ -392,6 +392,24 @@ class ApiTest extends TestCase
         $this->assertEquals('123', $order->Subject);
     }
 
+    /**
+     * @test
+     */
+    public function canGetCustomModuleRecord()
+    {
+        /** @var Records $module */
+        $module = self::$zoho->tests;
+
+        $name = uniqid();
+        $response = $module->create([
+            'Name'         => $name
+        ]);
+
+        $this->assertNotEmpty($response->getId());
+        $item = $module->get($response->getId());
+        $this->assertEquals($name, $item->Name);
+    }
+
 
     /**
      * @test

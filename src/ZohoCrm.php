@@ -84,7 +84,7 @@ class ZohoCrm implements Contracts\ProvidesModules
     {
         if (!$this->apiModules) {
             $this->apiModules = $this->settings->modules->getList()->mapWithKeys(function (Module $module) {
-                return collect([strtolower($module->module_name) => $module]);
+                return collect([strtolower($module->api_name) => $module]);
             });
         }
 
