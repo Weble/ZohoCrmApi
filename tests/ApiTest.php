@@ -35,10 +35,12 @@ class ApiTest extends TestCase
      */
     public static function setUpBeforeClass()
     {
+        $auth = self::getConfig();
+
         $oAuthClient = self::createOAuthClient();
         $client = new Client($oAuthClient);
         $client->throttle(1, 1);
-        $client->setMode(Mode::sandbox());
+        $client->setMode(Mode::make($auth->mode ?? 'sandbox'));
 
         self::$client = $client;
         self::$zoho = new ZohoCrm($client);
@@ -46,12 +48,7 @@ class ApiTest extends TestCase
 
     protected static function createOAuthClient(): OAuthClient
     {
-        $authFile = __DIR__ . '/config.example.json';
-        if (file_exists(__DIR__ . '/config.json')) {
-            $authFile = __DIR__ . '/config.json';
-        }
-
-        $auth = json_decode(file_get_contents($authFile));
+        $auth = self::getConfig();
 
         $region = Region::us();
         if ($auth->region) {
@@ -69,6 +66,16 @@ class ApiTest extends TestCase
         $client->useCache($pool);
 
         return $client;
+    }
+
+    private static function getConfig(): \stdClass
+    {
+        $authFile = __DIR__ . '/config.example.json';
+        if (file_exists(__DIR__ . '/config.json')) {
+            $authFile = __DIR__ . '/config.json';
+        }
+
+        return json_decode(file_get_contents($authFile));
     }
 
     /**
@@ -383,6 +390,24 @@ class ApiTest extends TestCase
         $order = $module->get($response->getId());
 
         $this->assertEquals('123', $order->Subject);
+    }
+
+    /**
+     * @test
+     */
+    public function canGetCustomModuleRecord()
+    {
+        /** @var Records $module */
+        $module = self::$zoho->tests;
+
+        $name = uniqid();
+        $response = $module->create([
+            'Name'         => $name
+        ]);
+
+        $this->assertNotEmpty($response->getId());
+        $item = $module->get($response->getId());
+        $this->assertEquals($name, $item->Name);
     }
 
 
