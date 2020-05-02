@@ -21,8 +21,11 @@ trait ProvidesModules
         return null;
     }
 
-    public function getAvailableModules(): Collection
+    /**
+     * @return Collection
+     */
+    public function getAvailableModules()
     {
-        return ($this->availableModules instanceof Collection) ? $this->availableModules : collect($this->availableModules);
+        return collect($this->availableModules);
     }
 }
