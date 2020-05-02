@@ -22,6 +22,14 @@ class Org extends Module
     /**
      * @return string
      */
+    protected function getResourceKey()
+    {
+        return 'org';
+    }
+
+    /**
+     * @return string
+     */
     public function getModelClassName()
     {
         return \Webleit\ZohoCrmApi\Models\Org::class;
