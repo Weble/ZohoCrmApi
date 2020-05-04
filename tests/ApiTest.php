@@ -32,7 +32,7 @@ class ApiTest extends TestCase
     /**
      * setup
      */
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass():void
     {
         $auth = self::getConfig();
 
