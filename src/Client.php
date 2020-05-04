@@ -164,7 +164,7 @@ class Client
 
         $data = json_decode($body, true);
 
-        return $data;
+        return $data ?? [];
     }
 
     protected function getPageContext(int $start = 1, int $limit = 10, string $orderBy = 'created_time', string $orderDir = 'DESC', array $search = [])

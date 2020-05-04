@@ -71,17 +71,19 @@ class ApiTest extends TestCase
     {
         $authFile = __DIR__ . '/config.example.json';
         if (file_exists(__DIR__ . '/config.json')) {
-            $authFile = __DIR__ . '/config.json';
+            // $authFile = __DIR__ . '/config.json';
         }
 
         $config = json_decode(file_get_contents($authFile));
 
         foreach ($config as $key => $value) {
-            $envValue = $_ENV[strtoupper('ZOHO_' . $key)] ?? null;
+            $envValue = $_SERVER[strtoupper('ZOHO_' . $key)] ?? null;
             if ($envValue) {
                 $config->$key = $envValue;
             }
         }
+
+        dd($config);
 
         return $config;
     }
@@ -175,12 +177,7 @@ class ApiTest extends TestCase
 
         // Unreachable modules
 
-        foreach ($modules as $module => $moduleName) {
-            try {
-                $this->assertGreaterThanOrEqual(0, self::$zoho->$module->getList()->count());
-            } catch (NonExistingModule $e) {
-            }
-        }
+        $this->assertGreaterThan(0, $modules->count());
     }
 
     /**
@@ -191,7 +188,6 @@ class ApiTest extends TestCase
         /** @var Records $leadModule */
         $leadModule = self::$zoho->leads;
         $response = $leadModule->create([
-            'Company' => 'Alpha ltd',
             'Last_Name' => 'Doe',
             'First_Name' => 'John',
         ]);
@@ -200,7 +196,9 @@ class ApiTest extends TestCase
 
         $lead = self::$zoho->leads->get($response->getId());
 
-        $this->assertEquals('Alpha ltd', $lead->Company);
+
+        $this->assertEquals('John', $lead->First_Name);
+        $this->assertEquals('Doe', $lead->Last_Name);
     }
 
     /**
@@ -214,14 +212,14 @@ class ApiTest extends TestCase
         $lead = self::$zoho->leads->getList()->first();
 
         $response = $leadModule->update($lead->getId(), [
-            'Company' => 'Beta',
+            'Last_Name' => 'NoName',
         ]);
 
         $this->assertNotEmpty($response->getId());
 
         $lead = self::$zoho->leads->get($response->getId());
 
-        $this->assertEquals('Beta', $lead->Company);
+        $this->assertEquals('NoName', $lead->Last_Name);
     }
 
     /**
@@ -231,17 +229,14 @@ class ApiTest extends TestCase
     {
         $data = [
             [
-                'Company' => 'Alpha ltd',
                 'Last_Name' => 'Doe',
                 'First_Name' => 'John',
             ],
             [
-                'Company' => 'Alpha ltd',
                 'Last_Name' => 'Doe',
                 'First_Name' => 'John',
             ],
             [
-                'Company' => 'Beta ltd',
                 'Last_Name' => 'Doe',
                 'First_Name' => 'John',
             ],
@@ -258,7 +253,7 @@ class ApiTest extends TestCase
         foreach ($data as $k => $row) {
             $response = $responses->get($k);
             $lead = self::$zoho->leads->get($response->getId());
-            $this->assertEquals($row['Company'], $lead->Company);
+            $this->assertEquals($row['Last_Name'], $lead->Last_Name);
         }
     }
 
@@ -269,17 +264,14 @@ class ApiTest extends TestCase
     {
         $data = [
             [
-                'Company' => 'Alpha ltd',
                 'Last_Name' => 'Doe',
                 'First_Name' => 'John',
             ],
             [
-                'Company' => 'Alpha ltd',
                 'First_Name' => 'John',
                 // This one misses last name, and will fail
             ],
             [
-                'Company' => 'Beta ltd',
                 'Last_Name' => 'Doe',
                 'First_Name' => 'John',
             ],
@@ -302,7 +294,6 @@ class ApiTest extends TestCase
     {
         $leadModule = self::$zoho->leads;
         $response = $leadModule->create([
-            'Company' => 'Alpha ltd',
             'Last_Name' => 'Doe',
             'First_Name' => 'John',
         ]);
@@ -310,7 +301,6 @@ class ApiTest extends TestCase
         $conversions = $leadModule->convertLead($response->getId());
 
         $this->assertArrayHasKey('Contacts', $conversions);
-        $this->assertArrayHasKey('Accounts', $conversions);
         $this->assertArrayHasKey('Deals', $conversions);
     }
 
