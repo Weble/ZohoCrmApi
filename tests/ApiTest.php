@@ -82,8 +82,6 @@ class ApiTest extends TestCase
             }
         }
 
-        dd($config);
-
         return $config;
     }
 
