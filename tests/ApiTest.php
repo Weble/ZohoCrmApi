@@ -11,7 +11,6 @@ use Weble\ZohoClient\OAuthClient;
 use Webleit\ZohoCrmApi\Client;
 use Webleit\ZohoCrmApi\Enums\Mode;
 use Webleit\ZohoCrmApi\Enums\UserType;
-use Webleit\ZohoCrmApi\Exception\NonExistingModule;
 use Webleit\ZohoCrmApi\Models\Settings\Layout;
 use Webleit\ZohoCrmApi\Models\User;
 use Webleit\ZohoCrmApi\Modules\Records;
