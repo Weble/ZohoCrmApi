@@ -15,5 +15,4 @@ use Spatie\Enum\Enum;
  */
 class Mode extends Enum
 {
-
 }

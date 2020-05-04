@@ -2,8 +2,6 @@
 
 namespace Webleit\ZohoCrmApi\Contracts;
 
-use Webleit\ZohoCrmApi\Client;
-
 /**
  * Interface ProvidesModules
  * @package Webleit\ZohoSignApi\Contracts

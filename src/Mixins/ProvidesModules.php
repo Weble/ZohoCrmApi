@@ -15,6 +15,7 @@ trait ProvidesModules
     {
         if ($this->getAvailableModules()->has($name)) {
             $class = $this->getAvailableModules()->get($name);
+
             return new $class($this->client);
         }
 

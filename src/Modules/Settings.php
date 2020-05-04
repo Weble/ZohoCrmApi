@@ -31,20 +31,20 @@ class Settings implements \Webleit\ZohoCrmApi\Contracts\ProvidesModules
      * @var array
      */
     protected $availableModules = [
-        'modules'      => Settings\Modules::class,
-        'roles'        => Settings\Roles::class,
-        'profiles'     => Settings\Profiles::class,
-        'fields'       => Settings\Fields::class,
-        'layouts'      => Settings\Layouts::class,
+        'modules' => Settings\Modules::class,
+        'roles' => Settings\Roles::class,
+        'profiles' => Settings\Profiles::class,
+        'fields' => Settings\Fields::class,
+        'layouts' => Settings\Layouts::class,
         'relatedlists' => Settings\RelatedLists::class,
-        'customviews'  => Settings\CustomViews::class
+        'customviews' => Settings\CustomViews::class,
     ];
 
     /**
      * Settings constructor.
      * @param Client $client
      */
-    function __construct(Client $client)
+    public function __construct(Client $client)
     {
         $this->client = $client;
     }
