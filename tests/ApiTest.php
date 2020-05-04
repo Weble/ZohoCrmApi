@@ -12,9 +12,7 @@ use Webleit\ZohoCrmApi\Client;
 use Webleit\ZohoCrmApi\Enums\Mode;
 use Webleit\ZohoCrmApi\Enums\UserType;
 use Webleit\ZohoCrmApi\Exception\NonExistingModule;
-use Webleit\ZohoCrmApi\Models\Request;
 use Webleit\ZohoCrmApi\Models\Settings\Layout;
-use Webleit\ZohoCrmApi\Models\Template;
 use Webleit\ZohoCrmApi\Models\User;
 use Webleit\ZohoCrmApi\Modules\Records;
 use Webleit\ZohoCrmApi\ZohoCrm;
@@ -76,7 +74,16 @@ class ApiTest extends TestCase
             $authFile = __DIR__ . '/config.json';
         }
 
-        return json_decode(file_get_contents($authFile));
+        $config =  json_decode(file_get_contents($authFile));
+
+        foreach ($config as $key => $value) {
+            $envValue = $_ENV[strtoupper('ZOHO_' . $key)] ?? null;
+            if ($envValue) {
+                $config->$key = $envValue;
+            }
+        }
+
+        return $config;
     }
 
     /**
