@@ -70,7 +70,7 @@ class ApiTest extends TestCase
     {
         $authFile = __DIR__ . '/config.example.json';
         if (file_exists(__DIR__ . '/config.json')) {
-            // $authFile = __DIR__ . '/config.json';
+            $authFile = __DIR__ . '/config.json';
         }
 
         $config = json_decode(file_get_contents($authFile));
@@ -279,7 +279,7 @@ class ApiTest extends TestCase
         $responses = $leadModule->createMany($data);
 
         $this->assertNotEmpty($responses[0]->getId());
-        $this->assertEmpty($responses[1]);
+        $this->assertEquals('error', $responses[1]['status']);
         $this->assertNotEmpty($responses[2]->getId());
     }
 
@@ -368,38 +368,6 @@ class ApiTest extends TestCase
     /**
      * @test
      */
-    public function canCreateSalesOrder()
-    {
-        /** @var Records $module */
-        $module = new Records(self::$client, 'Sales_Orders');
-
-        /** @var Records $module */
-        $productsModule = new Records(self::$client, 'Products');
-        $product = $productsModule->create([
-            'Product_Name' => 'Test',
-        ]);
-
-        $response = $module->create([
-            'Subject' => '123',
-            'Product_Details' => [
-                [
-                    'product' => $product->getId(),
-                    'Unit_Price' => 10,
-                    'quantity' => 2,
-                ],
-            ],
-        ]);
-
-        $this->assertNotEmpty($response->getId());
-
-        $order = $module->get($response->getId());
-
-        $this->assertEquals('123', $order->Subject);
-    }
-
-    /**
-     * @test
-     */
     public function canGetCustomModuleRecord()
     {
         /** @var Records $module */
@@ -413,42 +381,5 @@ class ApiTest extends TestCase
         $this->assertNotEmpty($response->getId());
         $item = $module->get($response->getId());
         $this->assertEquals($name, $item->Name);
-    }
-
-
-    /**
-     * @test
-     */
-    public function getCorrectApiUrl()
-    {
-        self::$client->sandboxMode();
-        $this->assertEquals(Client::ZOHOCRM_API_URL_SANDBOX_US, self::$client->getUrl());
-        self::$client->developerMode();
-        $this->assertEquals(Client::ZOHOCRM_API_URL_DEVELOPER_US, self::$client->getUrl());
-        self::$client->productionMode();
-        $this->assertEquals(Client::ZOHOCRM_API_URL_PRODUCTION_US, self::$client->getUrl());
-
-        self::$client->cnRegion()->sandboxMode();
-        $this->assertEquals(Client::ZOHOCRM_API_URL_SANDBOX_CN, self::$client->getUrl());
-        self::$client->cnRegion()->developerMode();
-        $this->assertEquals(Client::ZOHOCRM_API_URL_DEVELOPER_CN, self::$client->getUrl());
-        self::$client->cnRegion()->productionMode();
-        $this->assertEquals(Client::ZOHOCRM_API_URL_PRODUCTION_CN, self::$client->getUrl());
-
-        self::$client->euRegion()->sandboxMode();
-        $this->assertEquals(Client::ZOHOCRM_API_URL_SANDBOX_EU, self::$client->getUrl());
-        self::$client->euRegion()->developerMode();
-        $this->assertEquals(Client::ZOHOCRM_API_URL_DEVELOPER_EU, self::$client->getUrl());
-        self::$client->euRegion()->productionMode();
-        $this->assertEquals(Client::ZOHOCRM_API_URL_PRODUCTION_EU, self::$client->getUrl());
-
-        self::$client->usRegion()->sandboxMode();
-        $this->assertEquals(Client::ZOHOCRM_API_URL_SANDBOX_US, self::$client->getUrl());
-        self::$client->usRegion()->developerMode();
-        $this->assertEquals(Client::ZOHOCRM_API_URL_DEVELOPER_US, self::$client->getUrl());
-        self::$client->usRegion()->productionMode();
-        $this->assertEquals(Client::ZOHOCRM_API_URL_PRODUCTION_US, self::$client->getUrl());
-
-        self::$client->usRegion()->developerMode();
     }
 }
