@@ -10,6 +10,7 @@ use Weble\ZohoClient\Enums\Region;
 use Weble\ZohoClient\OAuthClient;
 use Webleit\ZohoCrmApi\Client;
 use Webleit\ZohoCrmApi\Enums\Mode;
+use Webleit\ZohoCrmApi\Enums\UserType;
 use Webleit\ZohoCrmApi\Exception\NonExistingModule;
 use Webleit\ZohoCrmApi\Models\Request;
 use Webleit\ZohoCrmApi\Models\Settings\Layout;
@@ -56,7 +57,7 @@ class ApiTest extends TestCase
         }
 
         $filesystemAdapter = new Local(sys_get_temp_dir());
-        $filesystem        = new Filesystem($filesystemAdapter);
+        $filesystem = new Filesystem($filesystemAdapter);
         $pool = new FilesystemCachePool($filesystem);
 
         $client = new OAuthClient($auth->client_id, $auth->client_secret);
@@ -323,6 +324,18 @@ class ApiTest extends TestCase
     /**
      * @test
      */
+    public function canGetCurrentUser()
+    {
+        $user = self::$zoho->users->current();
+        $this->assertNotNull($user);
+
+        $users = self::$zoho->users->ofType(UserType::current());
+        $this->assertTrue($users->contains($user));
+    }
+
+    /**
+     * @test
+     */
     public function canListRoles()
     {
         $this->assertGreaterThan(0, self::$zoho->settings->roles->getList()->count());
@@ -402,7 +415,7 @@ class ApiTest extends TestCase
 
         $name = uniqid();
         $response = $module->create([
-            'Name'         => $name
+            'Name' => $name
         ]);
 
         $this->assertNotEmpty($response->getId());
