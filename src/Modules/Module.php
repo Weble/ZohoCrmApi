@@ -32,7 +32,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
      * Module constructor.
      * @param Client $client
      */
-    function __construct(Client $client)
+    public function __construct(Client $client)
     {
         $this->client = $client;
     }
@@ -48,8 +48,9 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
         $list = $this->client->getList($this->getUrl(), $params);
 
         $collection = new Collection($list[$this->getResourceKey()]);
-        $collection = $collection->mapWithKeys(function($item) {
+        $collection = $collection->mapWithKeys(function ($item) {
             $item = $this->make($item);
+
             return [$item->getId() => $item];
         });
 
@@ -67,7 +68,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
     {
         $item = $this->client->get($this->getUrl(), $id, $params);
 
-        if (!is_array($item)) {
+        if (! is_array($item)) {
             return $item;
         }
 
@@ -83,6 +84,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
     public function getTotal()
     {
         $list = $this->client->getList($this->getUrl(), null, ['response_option' => self::RESPONSE_OPTION_PAGINATION_ONLY]);
+
         return $list['page_context']['total'];
     }
 
@@ -113,7 +115,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
     {
         $data = [
             'data' => (array) $data,
-            'triggers' => $triggers
+            'triggers' => $triggers,
         ];
 
         $data = $this->client->post($this->getUrl(), $data, $params);
@@ -150,7 +152,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
 
         $data = [
             'data' => [$data],
-            'triggers' => $triggers
+            'triggers' => $triggers,
         ];
 
         $data = $this->client->put($this->getUrl(), $data, $params);
@@ -180,13 +182,12 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
     {
         $data = [
             'data' => $data,
-            'triggers' => $triggers
+            'triggers' => $triggers,
         ];
 
         $data = $this->client->put($this->getUrl(), $data, $params);
         $items = [];
         foreach ($data['data'] as $row) {
-
             $item = $row;
             if ($row['code'] == 'SUCCESS') {
                 $item = $this->make($row['details']);
@@ -223,12 +224,12 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
     public function updateRelatedRecord($recordId, $relationName, $relatedRecordId, $data = [])
     {
         $data = array_merge($data, [
-            'id' => $relatedRecordId
+            'id' => $relatedRecordId,
         ]);
 
         $putData = [
             'data' => [
-                $data
+                $data,
             ],
         ];
 
@@ -343,15 +344,15 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
      */
     protected function getPropertyList($property, $id = null, $class = null, $subProperty = null, $module = null)
     {
-        if (!$class) {
+        if (! $class) {
             $class = $this->getModelClassName() . '\\' . ucfirst(strtolower(Inflector::singularize($property)));
         }
 
-        if (!$module) {
+        if (! $module) {
             $module = $this;
         }
 
-        if (!$subProperty) {
+        if (! $subProperty) {
             $subProperty = $property;
         }
 
@@ -367,6 +368,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
         $collection = $collection->mapWithKeys(function ($item) use ($class, $module) {
             /** @var Model $item */
             $item = new $class($item, $module);
+
             return [$item->getId() => $item];
         });
 

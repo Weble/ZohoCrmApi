@@ -2,7 +2,6 @@
 
 namespace Webleit\ZohoCrmApi\Modules\Settings;
 
-use Webleit\ZohoCrmApi\Modules\Settings as SettingsModules;
 use Webleit\ZohoCrmApi\Modules\Module;
 
 /**

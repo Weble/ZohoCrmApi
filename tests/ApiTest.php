@@ -74,7 +74,7 @@ class ApiTest extends TestCase
             $authFile = __DIR__ . '/config.json';
         }
 
-        $config =  json_decode(file_get_contents($authFile));
+        $config = json_decode(file_get_contents($authFile));
 
         foreach ($config as $key => $value) {
             $envValue = $_ENV[strtoupper('ZOHO_' . $key)] ?? null;
@@ -179,7 +179,6 @@ class ApiTest extends TestCase
             try {
                 $this->assertGreaterThanOrEqual(0, self::$zoho->$module->getList()->count());
             } catch (NonExistingModule $e) {
-
             }
         }
     }
@@ -192,9 +191,9 @@ class ApiTest extends TestCase
         /** @var Records $leadModule */
         $leadModule = self::$zoho->leads;
         $response = $leadModule->create([
-            'Company'    => 'Alpha ltd',
-            'Last_Name'  => 'Doe',
-            'First_Name' => 'John'
+            'Company' => 'Alpha ltd',
+            'Last_Name' => 'Doe',
+            'First_Name' => 'John',
         ]);
 
         $this->assertNotEmpty($response->getId());
@@ -232,20 +231,20 @@ class ApiTest extends TestCase
     {
         $data = [
             [
-                'Company'    => 'Alpha ltd',
-                'Last_Name'  => 'Doe',
-                'First_Name' => 'John'
+                'Company' => 'Alpha ltd',
+                'Last_Name' => 'Doe',
+                'First_Name' => 'John',
             ],
             [
-                'Company'    => 'Alpha ltd',
-                'Last_Name'  => 'Doe',
-                'First_Name' => 'John'
+                'Company' => 'Alpha ltd',
+                'Last_Name' => 'Doe',
+                'First_Name' => 'John',
             ],
             [
-                'Company'    => 'Beta ltd',
-                'Last_Name'  => 'Doe',
-                'First_Name' => 'John'
-            ]
+                'Company' => 'Beta ltd',
+                'Last_Name' => 'Doe',
+                'First_Name' => 'John',
+            ],
         ];
 
         /** @var Records $leadModule */
@@ -270,20 +269,20 @@ class ApiTest extends TestCase
     {
         $data = [
             [
-                'Company'    => 'Alpha ltd',
-                'Last_Name'  => 'Doe',
-                'First_Name' => 'John'
+                'Company' => 'Alpha ltd',
+                'Last_Name' => 'Doe',
+                'First_Name' => 'John',
             ],
             [
-                'Company'    => 'Alpha ltd',
-                'First_Name' => 'John'
+                'Company' => 'Alpha ltd',
+                'First_Name' => 'John',
                 // This one misses last name, and will fail
             ],
             [
-                'Company'    => 'Beta ltd',
-                'Last_Name'  => 'Doe',
-                'First_Name' => 'John'
-            ]
+                'Company' => 'Beta ltd',
+                'Last_Name' => 'Doe',
+                'First_Name' => 'John',
+            ],
         ];
 
         /** @var Records $leadModule */
@@ -293,7 +292,6 @@ class ApiTest extends TestCase
         $this->assertNotEmpty($responses[0]->getId());
         $this->assertEmpty($responses[1]);
         $this->assertNotEmpty($responses[2]->getId());
-
     }
 
 
@@ -304,9 +302,9 @@ class ApiTest extends TestCase
     {
         $leadModule = self::$zoho->leads;
         $response = $leadModule->create([
-            'Company'    => 'Alpha ltd',
-            'Last_Name'  => 'Doe',
-            'First_Name' => 'John'
+            'Company' => 'Alpha ltd',
+            'Last_Name' => 'Doe',
+            'First_Name' => 'John',
         ]);
 
         $conversions = $leadModule->convertLead($response->getId());
@@ -391,18 +389,18 @@ class ApiTest extends TestCase
         /** @var Records $module */
         $productsModule = new Records(self::$client, 'Products');
         $product = $productsModule->create([
-            'Product_Name' => 'Test'
+            'Product_Name' => 'Test',
         ]);
 
         $response = $module->create([
-            'Subject'         => '123',
+            'Subject' => '123',
             'Product_Details' => [
                 [
-                    'product'    => $product->getId(),
+                    'product' => $product->getId(),
                     'Unit_Price' => 10,
-                    'quantity'   => 2
-                ]
-            ]
+                    'quantity' => 2,
+                ],
+            ],
         ]);
 
         $this->assertNotEmpty($response->getId());
@@ -422,7 +420,7 @@ class ApiTest extends TestCase
 
         $name = uniqid();
         $response = $module->create([
-            'Name' => $name
+            'Name' => $name,
         ]);
 
         $this->assertNotEmpty($response->getId());

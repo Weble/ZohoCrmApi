@@ -2,9 +2,6 @@
 
 namespace Webleit\ZohoCrmApi\Modules;
 
-use Webleit\ZohoCrmApi\Modules\Settings as SettingsModules;
-use Webleit\ZohoCrmApi\Modules\Module;
-
 /**
  * Class Users
  * @package Webleit\ZohoCrmApi\Modules
@@ -42,11 +39,11 @@ class Org extends Module
      * @throws \Webleit\ZohoCrmApi\Exception\ApiError
      * @throws \Webleit\ZohoCrmApi\Exception\GrantCodeNotSetException
      */
-    public function get ($id = null, $params = [])
+    public function get($id = null, $params = [])
     {
         $item = $this->client->get($this->getUrl());
 
-        if (!is_array($item)) {
+        if (! is_array($item)) {
             return $item;
         }
 
@@ -54,6 +51,4 @@ class Org extends Module
 
         return $this->make($data);
     }
-
-
 }

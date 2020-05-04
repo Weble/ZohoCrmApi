@@ -8,5 +8,4 @@ namespace Webleit\ZohoCrmApi\Exception;
  */
 class ApiError extends \Exception
 {
-
 }

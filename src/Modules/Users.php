@@ -33,7 +33,7 @@ class Users extends Module
     public function ofType(UserType $type)
     {
         return $this->getList([
-            'type' => $type->getValue()
+            'type' => $type->getValue(),
         ]);
     }
 

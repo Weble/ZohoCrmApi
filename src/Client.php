@@ -45,7 +45,7 @@ class Client
 
     public function __construct(OAuthClient $oAuthClient, ClientInterface $client = null)
     {
-        if (!$client) {
+        if (! $client) {
             $client = new \GuzzleHttp\Client();
         }
 
@@ -59,7 +59,7 @@ class Client
     {
         return call_user_func_array([
             $this->oAuthClient,
-            $name
+            $name,
         ], $arguments);
     }
 
@@ -124,6 +124,7 @@ class Client
     public function setRegion(Region $region): self
     {
         $this->oAuthClient->setRegion($region);
+
         return $this;
     }
 
@@ -170,12 +171,12 @@ class Client
     {
         return [
             'page_context' => [
-                'row_count'   => $limit,
+                'row_count' => $limit,
                 'start_index' => $start,
                 //'search_columns' => $search,
                 'sort_column' => $orderBy,
-                'sort_order'  => $orderDir
-            ]
+                'sort_order' => $orderDir,
+            ],
         ];
     }
 
@@ -192,10 +193,10 @@ class Client
     public function call(string $uri, string $method, array $data = [])
     {
         $options = array_merge([
-            'query'       => [],
+            'query' => [],
             'form_params' => [],
-            'json'        => [],
-            'headers'     => ['Authorization' => 'Zoho-oauthtoken ' . $this->oAuthClient->getAccessToken()]
+            'json' => [],
+            'headers' => ['Authorization' => 'Zoho-oauthtoken ' . $this->oAuthClient->getAccessToken()],
         ], $data);
 
         try {
@@ -205,27 +206,28 @@ class Client
             // Retry?
             if ($e->getCode() === 401) {
                 $this->oAuthClient->generateTokens()->getAccessToken();
+
                 return $this->call($uri, $method, $data);
             }
 
             $response = $e->getResponse();
 
-            if (!$response) {
+            if (! $response) {
                 throw $e;
             }
 
             $response = json_decode($response->getBody());
-            if (!$response) {
+            if (! $response) {
                 throw $e;
             }
 
-            if (!isset($response->code)) {
+            if (! isset($response->code)) {
                 throw $e;
             }
 
             if (in_array($response->code, [
                 'INVALID_MODULE',
-                'INVALID_URL_PATTERN'
+                'INVALID_URL_PATTERN',
             ])) {
                 throw new NonExistingModule($response->message);
             }
@@ -239,13 +241,16 @@ class Client
         switch ($this->getMode()) {
             case Mode::developer():
                 $apiUrl = self::ZOHOCRM_API_DEVELOPER_PARTIAL_HOST;
+
                 break;
             case Mode::sandbox():
                 $apiUrl = self::ZOHOCRM_API_SANDBOX_PARTIAL_HOST;
+
                 break;
             case Mode::production():
             default:
                 $apiUrl = self::ZOHOCRM_API_PRODUCION_PARTIAL_HOST;
+
                 break;
         }
 
@@ -265,6 +270,7 @@ class Client
     public function setMode(Mode $mode): self
     {
         $this->mode = $mode;
+
         return $this;
     }
 
@@ -318,7 +324,7 @@ class Client
             throw new ApiError('Response from Zoho is not success. Message: ' . $response->getReasonPhrase());
         }
 
-        if (!$result) {
+        if (! $result) {
             // All ok, probably not json, like PDF?
             if ($response->getStatusCode() >= 200 && $response->getStatusCode() <= 299) {
                 return (string)$response->getBody();
@@ -346,7 +352,7 @@ class Client
     {
         return $this->processResult($this->call($url, 'POST', [
             'query' => $queryParams,
-            'json'  => $params
+            'json' => $params,
         ]));
     }
 
@@ -365,7 +371,7 @@ class Client
     {
         return $this->processResult($this->call($url, 'PUT', [
             'query' => $queryParams,
-            'json'  => $params
+            'json' => $params,
         ]));
     }
 
