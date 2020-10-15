@@ -50,7 +50,7 @@ class Client
 
     public function __construct(OAuthClient $oAuthClient, ClientInterface $client = null)
     {
-        if (!$client) {
+        if (! $client) {
             $client = new \GuzzleHttp\Client();
         }
 
@@ -76,6 +76,7 @@ class Client
     public function setOAuthClient(OAuthClient $authClient): self
     {
         $this->oAuthClient = $authClient;
+
         return $this;
     }
 
@@ -126,11 +127,11 @@ class Client
     public function call(string $uri, string $method, array $data = []): ResponseInterface
     {
         $options = array_merge([
-            'query'       => [],
+            'query' => [],
             'form_params' => [],
-            'json'        => [],
-            'headers'     => [
-                'Authorization' => 'Zoho-oauthtoken ' . $this->oAuthClient->getAccessToken()
+            'json' => [],
+            'headers' => [
+                'Authorization' => 'Zoho-oauthtoken ' . $this->oAuthClient->getAccessToken(),
             ],
         ], $data);
 
@@ -142,15 +143,16 @@ class Client
             return $response;
         } catch (ClientException $e) {
             // Retry?
-            if ($e->getCode() === 401 && !$this->retriedRefresh) {
+            if ($e->getCode() === 401 && ! $this->retriedRefresh) {
                 $this->oAuthClient->generateTokens()->getAccessToken();
                 $this->retriedRefresh = true;
+
                 return $this->call($uri, $method, $data);
             }
 
             $response = $e->getResponse();
 
-            if (!$response) {
+            if (! $response) {
                 throw $e;
             }
 
@@ -210,6 +212,7 @@ class Client
         }
 
         $result = $this->call($url, 'GET', ['query' => $params]);
+
         return $this->processResult($result);
     }
 
@@ -217,7 +220,7 @@ class Client
     {
         return $this->processResult($this->call($url, 'POST', [
             'query' => $queryParams,
-            'json'  => $params,
+            'json' => $params,
         ]));
     }
 
@@ -225,7 +228,7 @@ class Client
     {
         return $this->processResult($this->call($url, 'PUT', [
             'query' => $queryParams,
-            'json'  => $params,
+            'json' => $params,
         ]));
     }
 
@@ -241,7 +244,7 @@ class Client
 
     public function processResult(ResponseInterface $response)
     {
-        if (!$this->isSuccessfulResponse($response)) {
+        if (! $this->isSuccessfulResponse($response)) {
             ApiError::throwFromResponse($response);
         }
 
@@ -251,7 +254,7 @@ class Client
             return $this->getResponseContent($response);
         }
 
-        if (!$result) {
+        if (! $result) {
             return $this->getResponseContent($response);
         }
 

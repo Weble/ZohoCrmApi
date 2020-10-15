@@ -3,7 +3,6 @@
 
 namespace Webleit\ZohoCrmApi\Mixins;
 
-
 use Doctrine\Inflector\Inflector;
 use Doctrine\Inflector\InflectorFactory;
 
@@ -16,7 +15,7 @@ trait HasInflector
 
     public function inflector(): Inflector
     {
-        if (!$this->inflector) {
+        if (! $this->inflector) {
             $this->inflector = InflectorFactory::create()->build();
         }
 

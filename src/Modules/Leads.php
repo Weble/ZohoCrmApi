@@ -20,7 +20,7 @@ class Leads extends Records
                 'data' => [
                     [
                         'overwrite' => false,
-                    ]
+                    ],
                 ],
             ])['data'][0] ?? [];
     }

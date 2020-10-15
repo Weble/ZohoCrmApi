@@ -50,18 +50,18 @@ class ApiError extends \Exception
     public static function throwFromResponse(ResponseInterface $response): void
     {
         [
-            'code'    => $code,
+            'code' => $code,
             'details' => $details,
-            'error'   => $error,
+            'error' => $error,
             'message' => $message
         ] = self::getErrorCodeAndDetailsFromResponse($response);
 
 
-        if (!$error) {
+        if (! $error) {
             return;
         }
 
-        if (!$code) {
+        if (! $code) {
             switch ($response->getStatusCode()) {
                 case 202:
                     throw new InvalidData($response, $details);
@@ -96,6 +96,7 @@ class ApiError extends \Exception
                     default:
                         throw new InvalidDataFormat($response, $details);
                 }
+                // no break
             case self::MANDATORY_NOT_FOUND:
                 throw new MandatoryDataNotFound($response, $details);
             case self::INVALID_URL_PATTERN:
@@ -121,19 +122,19 @@ class ApiError extends \Exception
             $body = json_decode($response->getBody(), true);
         } catch (\Exception $e) {
             return [
-                'code'    => null,
+                'code' => null,
                 'details' => [],
-                'error'   => false,
-                'message' => ''
+                'error' => false,
+                'message' => '',
 
             ];
         }
 
-        if (!isset($body['data'])) {
+        if (! isset($body['data'])) {
             return [
-                'code'    => $body['code'] ?? null,
+                'code' => $body['code'] ?? null,
                 'details' => $body['details'] ?? [],
-                'error'   => (($body['status'] ?? '') === 'error'),
+                'error' => (($body['status'] ?? '') === 'error'),
                 'message' => $body['code'] ?? '',
             ];
         }
@@ -141,18 +142,19 @@ class ApiError extends \Exception
         $body = $body['data'];
         if (isset($body['code'])) {
             return [
-                'code'    => $body['code'] ?? null,
+                'code' => $body['code'] ?? null,
                 'details' => $body['details'] ?? [],
-                'error'   => (($body['status'] ?? '') === 'error'),
+                'error' => (($body['status'] ?? '') === 'error'),
                 'message' => $body['code'] ?? '',
             ];
         }
 
         $body = collect($body);
+
         return [
-            'code'    => $body->pluck('code')->first(),
+            'code' => $body->pluck('code')->first(),
             'details' => $body->pluck('details')->flatten()->toArray(),
-            'error'   => ($body->pluck('status')->first() === 'error'),
+            'error' => ($body->pluck('status')->first() === 'error'),
             'message' => $body->pluck('message')->first() ?: '',
         ];
     }

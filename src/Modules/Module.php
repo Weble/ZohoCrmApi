@@ -60,7 +60,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
 
     public function pagination(): Pagination
     {
-        if (!$this->pagination) {
+        if (! $this->pagination) {
             $list = $this->client->getList($this->getUrl());
             $this->pagination = new Pagination($list['info'] ?? []);
         }
@@ -71,7 +71,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
     public function create(array $data, array $params = [], array $triggers = [
         self::TRIGGER_APPROVAL,
         self::TRIGGER_WORKFLOW,
-        self::TRIGGER_BLUEPRINT
+        self::TRIGGER_BLUEPRINT,
     ]): ?Model
     {
         return $this->createMany([$data], $params, $triggers)->first();
@@ -80,11 +80,11 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
     public function createMany($data, $params = [], $triggers = [
         self::TRIGGER_APPROVAL,
         self::TRIGGER_WORKFLOW,
-        self::TRIGGER_BLUEPRINT
+        self::TRIGGER_BLUEPRINT,
     ]): Collection
     {
         $data = [
-            'data'     => (array)$data,
+            'data' => (array)$data,
             'triggers' => $triggers,
         ];
 
@@ -108,13 +108,13 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
     public function update(string $id, array $data, array $params = [], array $triggers = [
         self::TRIGGER_APPROVAL,
         self::TRIGGER_WORKFLOW,
-        self::TRIGGER_BLUEPRINT
+        self::TRIGGER_BLUEPRINT,
     ]): Model
     {
         $data['id'] = $id;
 
         $data = [
-            'data'     => [$data],
+            'data' => [$data],
             'triggers' => $triggers,
         ];
 
@@ -127,11 +127,11 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
     public function updateMany(array $data, array $params = [], array $triggers = [
         self::TRIGGER_APPROVAL,
         self::TRIGGER_WORKFLOW,
-        self::TRIGGER_BLUEPRINT
+        self::TRIGGER_BLUEPRINT,
     ]): Collection
     {
         $data = [
-            'data'     => $data,
+            'data' => $data,
             'triggers' => $triggers,
         ];
 
@@ -151,6 +151,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
     public function delete(string $id): bool
     {
         $this->client->delete($this->getUrl(), $id);
+
         return true;
     }
 
@@ -215,6 +216,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
     public function markAs(string $id, string $status, string $key = 'status'): bool
     {
         $this->client->post($this->getUrl() . '/' . $id . '/' . $key . '/' . $status);
+
         return true;
     }
 
@@ -225,15 +227,15 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
 
     protected function getPropertyList(string $property, ?string $id = null, ?string $class = null, ?string $subProperty = null, ?\Webleit\ZohoCrmApi\Contracts\Module $module = null)
     {
-        if (!$class) {
+        if (! $class) {
             $class = $this->getModelClassName() . '\\' . ucfirst(strtolower(Inflector::singularize($property)));
         }
 
-        if (!$module) {
+        if (! $module) {
             $module = $this;
         }
 
-        if (!$subProperty) {
+        if (! $subProperty) {
             $subProperty = $property;
         }
 

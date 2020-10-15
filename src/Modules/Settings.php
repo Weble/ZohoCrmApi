@@ -28,13 +28,13 @@ class Settings implements \Webleit\ZohoCrmApi\Contracts\ProvidesModules, \Weblei
      * @var array
      */
     protected $availableModules = [
-        'modules'      => Settings\Modules::class,
-        'roles'        => Settings\Roles::class,
-        'profiles'     => Settings\Profiles::class,
-        'fields'       => Settings\Fields::class,
-        'layouts'      => Settings\Layouts::class,
+        'modules' => Settings\Modules::class,
+        'roles' => Settings\Roles::class,
+        'profiles' => Settings\Profiles::class,
+        'fields' => Settings\Fields::class,
+        'layouts' => Settings\Layouts::class,
         'relatedlists' => Settings\RelatedLists::class,
-        'customviews'  => Settings\CustomViews::class,
+        'customviews' => Settings\CustomViews::class,
     ];
 
     public function __construct(Client $client)
@@ -51,6 +51,4 @@ class Settings implements \Webleit\ZohoCrmApi\Contracts\ProvidesModules, \Weblei
     {
         return $this->client;
     }
-
-
 }

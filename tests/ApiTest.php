@@ -189,7 +189,7 @@ class ApiTest extends TestCase
     public function canUsePagination()
     {
         $leads = self::$zoho->leads;
-        $leads->getList( (new ListParameters())->perPage(10)->toArray());
+        $leads->getList((new ListParameters())->perPage(10)->toArray());
         $pagination = $leads->pagination();
 
         $this->assertInstanceOf(Pagination::class, $pagination);
@@ -213,7 +213,7 @@ class ApiTest extends TestCase
         /** @var Records $leadModule */
         $leadModule = self::$zoho->leads;
         $response = $leadModule->create([
-            'Last_Name'  => 'Doe',
+            'Last_Name' => 'Doe',
             'First_Name' => 'John',
         ]);
 
@@ -235,9 +235,9 @@ class ApiTest extends TestCase
         $leadModule = self::$zoho->leads;
 
         $lead = $leadModule->create([
-            'Last_Name'  => 'Doe',
+            'Last_Name' => 'Doe',
             'First_Name' => 'John',
-            'Email'      => 'test@example.com'
+            'Email' => 'test@example.com',
         ]);
 
         $lead = $leadModule->get($lead->getId());
@@ -255,9 +255,9 @@ class ApiTest extends TestCase
         $leadModule = self::$zoho->leads;
 
         $lead = $leadModule->create([
-            'Last_Name'  => 'Doe',
+            'Last_Name' => 'Doe',
             'First_Name' => 'John',
-            'Email'      => 'test@example.com'
+            'Email' => 'test@example.com',
         ]);
 
         $lead = $leadModule->get($lead->getId());
@@ -296,15 +296,15 @@ class ApiTest extends TestCase
     {
         $data = [
             [
-                'Last_Name'  => 'Doe',
+                'Last_Name' => 'Doe',
                 'First_Name' => 'John',
             ],
             [
-                'Last_Name'  => 'Doe',
+                'Last_Name' => 'Doe',
                 'First_Name' => 'John',
             ],
             [
-                'Last_Name'  => 'Doe',
+                'Last_Name' => 'Doe',
                 'First_Name' => 'John',
             ],
         ];
@@ -331,7 +331,7 @@ class ApiTest extends TestCase
     {
         $data = [
             [
-                'Last_Name'  => 'Doe',
+                'Last_Name' => 'Doe',
                 'First_Name' => 'John',
             ],
             [
@@ -339,7 +339,7 @@ class ApiTest extends TestCase
                 // This one misses last name, and will fail
             ],
             [
-                'Last_Name'  => 'Doe',
+                'Last_Name' => 'Doe',
                 'First_Name' => 'John',
             ],
         ];
@@ -361,7 +361,7 @@ class ApiTest extends TestCase
     {
         $leadModule = self::$zoho->leads;
         $response = $leadModule->create([
-            'Last_Name'  => 'Doe',
+            'Last_Name' => 'Doe',
             'First_Name' => 'John',
         ]);
 
@@ -479,6 +479,5 @@ class ApiTest extends TestCase
         $leadModule->create([
             'Test' => 'John',
         ]);
-
     }
 }

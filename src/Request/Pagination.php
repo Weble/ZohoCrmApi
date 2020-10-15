@@ -3,7 +3,6 @@
 
 namespace Webleit\ZohoCrmApi\Request;
 
-
 class Pagination
 {
     protected $perPage = 200;

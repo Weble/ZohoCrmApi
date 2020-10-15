@@ -54,7 +54,7 @@ abstract class Model implements \Webleit\ZohoCrmApi\Contracts\Model
         if (method_exists($this->module, $name)) {
             return call_user_func_array([
                 $this->module,
-                $name
+                $name,
             ], $arguments);
         }
     }
@@ -81,7 +81,7 @@ abstract class Model implements \Webleit\ZohoCrmApi\Contracts\Model
 
     public function isNew(): bool
     {
-        return !$this->getId();
+        return ! $this->getId();
     }
 
     public function getId(): ?string
