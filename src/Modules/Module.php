@@ -3,7 +3,7 @@
 namespace Webleit\ZohoCrmApi\Modules;
 
 use Doctrine\Common\Inflector\Inflector;
-use Tightenco\Collect\Support\Collection;
+use Illuminate\Support\Collection;
 use Webleit\ZohoCrmApi\Client;
 use Webleit\ZohoCrmApi\Exception\GrantCodeNotSetException;
 use Webleit\ZohoCrmApi\Models\Model;
@@ -175,7 +175,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
      * @param array $params
      * @param array $triggers
      *
-     * @return \Illuminate\Support\Collection|\Tightenco\Collect\Support\Collection
+     * @return \Illuminate\Support\Collection
      * @throws \Webleit\ZohoCrmApi\Exception\ApiError
      * @throws \Webleit\ZohoCrmApi\Exception\GrantCodeNotSetException
      * @throws \Webleit\ZohoCrmApi\Exception\NonExistingModule

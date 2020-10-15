@@ -2,7 +2,7 @@
 
 namespace Webleit\ZohoCrmApi\Mixins;
 
-use Tightenco\Collect\Support\Collection;
+use Illuminate\Support\Collection;
 
 trait ProvidesModules
 {

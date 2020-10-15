@@ -2,7 +2,7 @@
 
 namespace Webleit\ZohoCrmApi\Modules;
 
-use Tightenco\Collect\Support\Collection;
+use Illuminate\Support\Collection;
 use Webleit\ZohoCrmApi\Client;
 use Webleit\ZohoCrmApi\Exception\GrantCodeNotSetException;
 

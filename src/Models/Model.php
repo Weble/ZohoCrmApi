@@ -2,7 +2,7 @@
 namespace Webleit\ZohoCrmApi\Models;
 
 use Doctrine\Common\Inflector\Inflector;
-use Tightenco\Collect\Contracts\Support\Arrayable;
+use Illuminate\Contracts\Support\Arrayable;
 use Webleit\ZohoCrmApi\Contracts\Module;
 
 /**

@@ -2,7 +2,7 @@
 
 namespace Webleit\ZohoCrmApi;
 
-use Tightenco\Collect\Support\Collection;
+use Illuminate\Support\Collection;
 use Webleit\ZohoCrmApi\Mixins\ProvidesModules;
 use Webleit\ZohoCrmApi\Models\Settings\Module;
 use Webleit\ZohoCrmApi\Modules\Records;

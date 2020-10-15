@@ -13,7 +13,7 @@ class Modules extends Module
 {
     /**
      * @param $module
-     * @return \Tightenco\Collect\Support\Collection|static
+     * @return \Illuminate\Support\Collection|static
      * @throws \Webleit\ZohoCrmApi\Exception\ApiError
      * @throws \Webleit\ZohoCrmApi\Exception\GrantCodeNotSetException
      */
@@ -32,7 +32,7 @@ class Modules extends Module
 
     /**
      * @param $module
-     * @return \Tightenco\Collect\Support\Collection|static
+     * @return \Illuminate\Support\Collection|static
      * @throws \Webleit\ZohoCrmApi\Exception\ApiError
      * @throws \Webleit\ZohoCrmApi\Exception\GrantCodeNotSetException
      */
@@ -51,7 +51,7 @@ class Modules extends Module
 
     /**
      * @param $module
-     * @return \Tightenco\Collect\Support\Collection|static
+     * @return \Illuminate\Support\Collection|static
      * @throws \Webleit\ZohoCrmApi\Exception\ApiError
      * @throws \Webleit\ZohoCrmApi\Exception\GrantCodeNotSetException
      */
@@ -74,7 +74,7 @@ class Modules extends Module
 
     /**
      * @param $module
-     * @return \Tightenco\Collect\Support\Collection|static
+     * @return \Illuminate\Support\Collection|static
      * @throws \Webleit\ZohoCrmApi\Exception\ApiError
      * @throws \Webleit\ZohoCrmApi\Exception\GrantCodeNotSetException
      */
