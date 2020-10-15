@@ -82,7 +82,8 @@ class Client
 
     public function throttle(int $maxRequests = 0, float $duration = 0): self
     {
-        $this->throttle = ($maxRequests > 0) ? true : false;
+        $this->throttle = $maxRequests > 0;
+        $this->client = new \GuzzleHttp\Client();
 
         if ($this->throttle) {
             $this->enableThrottling($maxRequests, $duration);
