@@ -72,7 +72,9 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
             return $item;
         }
 
-        $data = array_shift($item[$this->getResourceKey()]);
+        $items = $item[$this->getResourceKey()] ?? [];
+
+        $data = array_shift($items);
 
         return $this->make($data);
     }
@@ -159,7 +161,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
         $row = array_shift($data['data']);
 
 
-        $item = null;
+        $item = $row;
         if ($row['code'] == 'SUCCESS') {
             $item = $this->make($row['details']);
         }

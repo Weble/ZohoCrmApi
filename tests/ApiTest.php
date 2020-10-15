@@ -58,6 +58,7 @@ class ApiTest extends TestCase
         $pool = new FilesystemCachePool($filesystem);
 
         $client = new OAuthClient($auth->client_id, $auth->client_secret);
+        $client->setGrantCode($auth->grant_token);
         $client->setRefreshToken($auth->refresh_token);
         $client->setRegion($region);
         $client->offlineMode();
@@ -180,6 +181,14 @@ class ApiTest extends TestCase
     /**
      * @test
      */
+    public function getGetSalesOrders()
+    {
+        $this->assertGreaterThan(0, self::$zoho->sales_orders->getList()->count());
+    }
+
+    /**
+     * @test
+     */
     public function canCreateLead()
     {
         /** @var Records $leadModule */
@@ -196,6 +205,49 @@ class ApiTest extends TestCase
 
         $this->assertEquals('John', $lead->First_Name);
         $this->assertEquals('Doe', $lead->Last_Name);
+    }
+
+    /**
+     * @test
+     */
+    public function canSearch()
+    {
+        /** @var Records $leadModule */
+        $leadModule = self::$zoho->leads;
+
+        $lead = $leadModule->create([
+            'Last_Name' => 'Doe',
+            'First_Name' => 'John',
+            'Email' => 'test@example.com'
+        ]);
+
+        $lead = $leadModule->get($lead->getId());
+
+        $response = $leadModule->searchRaw("(Email:equals:{$lead->Email})");
+        $this->assertGreaterThan(0, $response->count());
+    }
+
+    /**
+     * @test
+     */
+    public function canUploadPhoto()
+    {
+        /** @var Records $leadModule */
+        $leadModule = self::$zoho->leads;
+
+        $lead = $leadModule->create([
+            'Last_Name' => 'Doe',
+            'First_Name' => 'John',
+            'Email' => 'test@example.com'
+        ]);
+
+        $lead = $leadModule->get($lead->getId());
+
+        $response = $lead->uploadPhoto('logo.png', file_get_contents(__DIR__. '/temp/zoho-logo-512px.png'));
+        $this->assertTrue($response);
+
+        $response = $leadModule->uploadPhoto($lead->getId(), 'logo.png', file_get_contents(__DIR__. '/temp/zoho-logo-512px.png'));
+        $this->assertTrue($response);
     }
 
     /**
