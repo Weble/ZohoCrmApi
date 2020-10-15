@@ -51,7 +51,7 @@ class Client
 
     public function __construct(OAuthClient $oAuthClient, ClientInterface $client = null)
     {
-        if (!$client) {
+        if (! $client) {
             $client = new \GuzzleHttp\Client();
         }
 
@@ -77,6 +77,7 @@ class Client
     public function setOAuthClient(OAuthClient $authClient): self
     {
         $this->oAuthClient = $authClient;
+
         return $this;
     }
 
@@ -202,10 +203,10 @@ class Client
     public function call(string $uri, string $method, array $data = [])
     {
         $options = array_merge([
-            'query'       => [],
+            'query' => [],
             'form_params' => [],
-            'json'        => [],
-            'headers'     => ['Authorization' => 'Zoho-oauthtoken ' . $this->oAuthClient->getAccessToken()],
+            'json' => [],
+            'headers' => ['Authorization' => 'Zoho-oauthtoken ' . $this->oAuthClient->getAccessToken()],
         ], $data);
 
         try {
@@ -213,24 +214,25 @@ class Client
         } catch (ClientException $e) {
 
             // Retry?
-            if ($e->getCode() === 401 && !$this->retriedRefresh) {
+            if ($e->getCode() === 401 && ! $this->retriedRefresh) {
                 $this->oAuthClient->generateTokens()->getAccessToken();
                 $this->retriedRefresh = true;
+
                 return $this->call($uri, $method, $data);
             }
 
             $response = $e->getResponse();
 
-            if (!$response) {
+            if (! $response) {
                 throw $e;
             }
 
             $response = json_decode($response->getBody());
-            if (!$response) {
+            if (! $response) {
                 throw $e;
             }
 
-            if (!isset($response->code)) {
+            if (! isset($response->code)) {
                 throw $e;
             }
 
@@ -306,6 +308,7 @@ class Client
         }
 
         $result = $this->call($url, 'GET', ['query' => $params]);
+
         return $this->processResult($result);
     }
 
@@ -334,7 +337,7 @@ class Client
             throw new ApiError('Response from Zoho is not success. Message: ' . $response->getReasonPhrase());
         }
 
-        if (!$result) {
+        if (! $result) {
             // All ok, probably not json, like PDF?
             if ($response->getStatusCode() >= 200 && $response->getStatusCode() <= 299) {
                 return (string)$response->getBody();
@@ -362,7 +365,7 @@ class Client
     {
         return $this->processResult($this->call($url, 'POST', [
             'query' => $queryParams,
-            'json'  => $params,
+            'json' => $params,
         ]));
     }
 
@@ -381,7 +384,7 @@ class Client
     {
         return $this->processResult($this->call($url, 'PUT', [
             'query' => $queryParams,
-            'json'  => $params,
+            'json' => $params,
         ]));
     }
 

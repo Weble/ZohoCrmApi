@@ -218,7 +218,7 @@ class ApiTest extends TestCase
         $lead = $leadModule->create([
             'Last_Name' => 'Doe',
             'First_Name' => 'John',
-            'Email' => 'test@example.com'
+            'Email' => 'test@example.com',
         ]);
 
         $lead = $leadModule->get($lead->getId());
@@ -238,7 +238,7 @@ class ApiTest extends TestCase
         $lead = $leadModule->create([
             'Last_Name' => 'Doe',
             'First_Name' => 'John',
-            'Email' => 'test@example.com'
+            'Email' => 'test@example.com',
         ]);
 
         $lead = $leadModule->get($lead->getId());

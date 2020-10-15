@@ -88,14 +88,14 @@ class Records extends Module
                 $this->client->call($this->getUrl() . '/' . $leadId . '/photo', 'post', [
                     'multipart' => [
                         [
-                            'name'     => 'file',
+                            'name' => 'file',
                             'contents' => $fileContents,
-                            'filename' => $fileName
+                            'filename' => $fileName,
                         ],
                     ],
                 ])
             );
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             dd($e);
         }
 
