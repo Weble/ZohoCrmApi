@@ -4,32 +4,19 @@ namespace Webleit\ZohoCrmApi\Modules\Settings;
 
 use Webleit\ZohoCrmApi\Modules\Module;
 
-/**
- * Class Users
- * @package Webleit\ZohoCrmApi\Modules
- */
 class RelatedLists extends Module
 {
-    /**
-     * @return string
-     */
-    public function getUrlPath()
+    public function getUrlPath(): string
     {
         return 'settings/related_lists';
     }
 
-    /**
-     * @return string
-     */
-    public function getModelClassName()
+    public function getModelClassName(): string
     {
         return \Webleit\ZohoCrmApi\Models\Settings\RelatedList::class;
     }
 
-    /**
-     * @return string
-     */
-    protected function getResourceKey()
+    protected function getResourceKey(): string
     {
         return 'related_lists';
     }

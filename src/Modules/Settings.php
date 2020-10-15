@@ -7,9 +7,6 @@ use Webleit\ZohoCrmApi\Mixins\ProvidesModules;
 use Webleit\ZohoCrmApi\Modules\Settings as SettingsModules;
 
 /**
- * Class Settings
- * @package Webleit\ZohoCrmApi\Modules
- *
  * @property-read SettingsModules\Modules $modules;
  * @property-read SettingsModules\Roles $roles;
  * @property-read SettingsModules\Profiles $profiles;
@@ -18,7 +15,7 @@ use Webleit\ZohoCrmApi\Modules\Settings as SettingsModules;
  * @property-read SettingsModules\RelatedLists $relatedLists;
  * @property-read SettingsModules\CustomViews $customViews;
  */
-class Settings implements \Webleit\ZohoCrmApi\Contracts\ProvidesModules
+class Settings implements \Webleit\ZohoCrmApi\Contracts\ProvidesModules, \Webleit\ZohoCrmApi\Contracts\Module
 {
     use ProvidesModules;
 
@@ -31,31 +28,29 @@ class Settings implements \Webleit\ZohoCrmApi\Contracts\ProvidesModules
      * @var array
      */
     protected $availableModules = [
-        'modules' => Settings\Modules::class,
-        'roles' => Settings\Roles::class,
-        'profiles' => Settings\Profiles::class,
-        'fields' => Settings\Fields::class,
-        'layouts' => Settings\Layouts::class,
+        'modules'      => Settings\Modules::class,
+        'roles'        => Settings\Roles::class,
+        'profiles'     => Settings\Profiles::class,
+        'fields'       => Settings\Fields::class,
+        'layouts'      => Settings\Layouts::class,
         'relatedlists' => Settings\RelatedLists::class,
-        'customviews' => Settings\CustomViews::class,
+        'customviews'  => Settings\CustomViews::class,
     ];
 
-    /**
-     * Settings constructor.
-     * @param Client $client
-     */
     public function __construct(Client $client)
     {
         $this->client = $client;
     }
 
-    /**
-     * Proxy any module call to the right api call
-     * @param $name
-     * @return Module
-     */
     public function __get($name)
     {
         return $this->createModule($name);
     }
+
+    public function getClient(): Client
+    {
+        return $this->client;
+    }
+
+
 }

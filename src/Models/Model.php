@@ -1,16 +1,18 @@
 <?php
+
 namespace Webleit\ZohoCrmApi\Models;
 
-use Doctrine\Common\Inflector\Inflector;
-use Illuminate\Contracts\Support\Arrayable;
 use Webleit\ZohoCrmApi\Contracts\Module;
+use Webleit\ZohoCrmApi\Mixins\HasInflector;
 
 /**
  * Class Model
  * @package Webleit\ZohoSignApi\Models
  */
-abstract class Model implements \JsonSerializable, Arrayable
+abstract class Model implements \Webleit\ZohoCrmApi\Contracts\Model
 {
+    use HasInflector;
+
     /**
      * @var array
      */
@@ -21,29 +23,17 @@ abstract class Model implements \JsonSerializable, Arrayable
      */
     protected $module;
 
-    /**
-     * Model constructor.
-     * @param array $data
-     * @param  Module   $module
-     */
-    public function __construct($data = [], Module $module)
+    public function __construct(array $data, Module $module)
     {
         $this->data = $data;
         $this->module = $module;
     }
 
-    /**
-     * @return Module
-     */
-    public function getModule()
+    public function getModule(): Module
     {
         return $this->module;
     }
 
-    /**
-     * @param $name
-     * @return mixed
-     */
     public function __get($name)
     {
         if (isset($this->data[$name])) {
@@ -51,97 +41,63 @@ abstract class Model implements \JsonSerializable, Arrayable
         }
     }
 
-    /**
-     * @param $name
-     * @param $value
-     */
     public function __set($name, $value)
     {
         $this->data[$name] = $value;
     }
 
-    /**
-     * @param $name
-     * @param $arguments
-     * @return mixed
-     */
     public function __call($name, $arguments)
     {
         // add "id" as a parameter
         array_unshift($arguments, $this->getId());
 
         if (method_exists($this->module, $name)) {
-            return call_user_func_array([$this->module, $name], $arguments);
+            return call_user_func_array([
+                $this->module,
+                $name
+            ], $arguments);
         }
     }
 
-    /**
-     * @return array
-     */
-    public function getData()
+    public function getData(): array
     {
         return $this->data;
     }
 
-    /**
-     * @return array
-     */
     public function toArray()
     {
         return $this->getData();
     }
 
-    /**
-     * @return string
-     */
-    public function toJson()
+    public function toJson($options = 0): string
     {
-        return json_encode($this->toArray());
+        return json_encode($this->toArray(), $options);
     }
 
-    /**
-     * Convert the object into something JSON serializable.
-     *
-     * @return array
-     */
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         return $this->toArray();
     }
 
-    /**
-     * is a new object?
-     * @return bool
-     */
-    public function isNew()
+    public function isNew(): bool
     {
-        return ! $this->getId();
+        return !$this->getId();
     }
 
-    /**
-     * Get the id of the object
-     * @return bool|string
-     */
-    public function getId()
+    public function getId(): ?string
     {
         $key = $this->getKeyName();
 
-        return $this->$key ? $this->$key : false;
+        return $this->$key ?? null;
     }
 
-    /**
-     * Get the name of the primary key
-     */
-    public function getKeyName()
+    public function getKeyName(): string
     {
         return 'id';
     }
 
-    /**
-     * @return string
-     */
-    public function getName()
+    public function getName(): string
     {
-        return Inflector::singularize(strtolower((new \ReflectionClass($this))->getShortName()));
+        return $this->inflector()->singularize(strtolower((new \ReflectionClass($this))->getShortName()));
     }
 }

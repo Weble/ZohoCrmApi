@@ -2,7 +2,7 @@
 
 namespace Webleit\ZohoCrmApi\Exception;
 
-class NonExistingModule extends InvalidModule
+class RequestEntityTooLarge extends ApiError
 {
 
 }

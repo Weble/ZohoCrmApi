@@ -8,13 +8,12 @@ use BenTools\GuzzleHttp\Middleware\ThrottleMiddleware;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\ResponseInterface;
 use Weble\ZohoClient\Enums\Region;
 use Weble\ZohoClient\OAuthClient;
 use Webleit\ZohoCrmApi\Enums\Mode;
 use Webleit\ZohoCrmApi\Exception\ApiError;
-use Webleit\ZohoCrmApi\Exception\NonExistingModule;
+use Webleit\ZohoCrmApi\Request\ListParameters;
 use Webleit\ZohoCrmApi\Request\RequestMatcher;
 
 class Client
@@ -105,38 +104,6 @@ class Client
         return $this;
     }
 
-    /**
-     * @deprecated
-     */
-    public function developerMode(): self
-    {
-        return $this->setMode(Mode::developer());
-    }
-
-    /**
-     * @deprecated
-     */
-    public function productionMode(): self
-    {
-        return $this->setMode(Mode::production());
-    }
-
-    /**
-     * @deprecated
-     */
-    public function sandboxMode(): self
-    {
-        return $this->setMode(Mode::sandbox());
-    }
-
-    /**
-     * @deprecated
-     */
-    public function euRegion(): self
-    {
-        return $this->setRegion(Region::eu());
-    }
-
     public function setRegion(Region $region): self
     {
         $this->oAuthClient->setRegion($region);
@@ -144,37 +111,10 @@ class Client
         return $this;
     }
 
-    /**
-     * @deprecated
-     */
-    public function inRegion(): self
+    public function getList(string $uri, array $params = []): array
     {
-        return $this->setRegion(Region::in());
-    }
-
-    /**
-     * @deprecated
-     */
-    public function usRegion(): self
-    {
-        return $this->setRegion(Region::us());
-    }
-
-    /**
-     * @deprecated
-     */
-    public function cnRegion(): self
-    {
-        return $this->setRegion(Region::cn());
-    }
-
-    public function getList(string $uri, array $params = [], int $start = 1, int $limit = 10, string $orderBy = 'created_time', string $orderDir = 'DESC', array $search = []): array
-    {
-        $pageContext = $this->getPageContext($start, $limit, $orderBy, $orderDir, $search);
-
-        $params = array_merge($pageContext, $params);
-
-        $response = $this->call($uri, 'GET', ['query' => $params]);
+        $params = new ListParameters($params);
+        $response = $this->call($uri, 'GET', ['query' => $params->toArray()]);
 
         $body = $response->getBody();
 
@@ -183,35 +123,24 @@ class Client
         return $data ?? [];
     }
 
-    protected function getPageContext(int $start = 1, int $limit = 10, string $orderBy = 'created_time', string $orderDir = 'DESC', array $search = [])
-    {
-        // TODO: redo page context
-        return [];
-    }
-
-    /**
-     * @throws NonExistingModule
-     * @throws \Weble\ZohoClient\Exception\AccessDeniedException
-     * @throws \Weble\ZohoClient\Exception\ApiError
-     * @throws \Weble\ZohoClient\Exception\CannotGenerateAccessToken
-     * @throws \Weble\ZohoClient\Exception\CannotGenerateRefreshToken
-     * @throws \Weble\ZohoClient\Exception\GrantCodeNotSetException
-     * @throws \Weble\ZohoClient\Exception\InvalidGrantCodeException
-     * @throws \Weble\ZohoClient\Exception\RefreshTokenNotSet
-     */
-    public function call(string $uri, string $method, array $data = [])
+    public function call(string $uri, string $method, array $data = []): ResponseInterface
     {
         $options = array_merge([
             'query'       => [],
             'form_params' => [],
             'json'        => [],
-            'headers'     => ['Authorization' => 'Zoho-oauthtoken ' . $this->oAuthClient->getAccessToken()],
+            'headers'     => [
+                'Authorization' => 'Zoho-oauthtoken ' . $this->oAuthClient->getAccessToken()
+            ],
         ], $data);
 
         try {
-            return $this->client->$method($this->getUrl() . $uri, array_filter($options));
-        } catch (ClientException $e) {
+            $response = $this->client->$method($this->getUrl() . $uri, array_filter($options));
 
+            ApiError::throwFromResponse($response);
+
+            return $response;
+        } catch (ClientException $e) {
             // Retry?
             if ($e->getCode() === 401 && !$this->retriedRefresh) {
                 $this->oAuthClient->generateTokens()->getAccessToken();
@@ -225,23 +154,9 @@ class Client
                 throw $e;
             }
 
-            $response = json_decode($response->getBody());
-            if (!$response) {
-                throw $e;
-            }
+            ApiError::throwFromResponse($response);
 
-            if (!isset($response->code)) {
-                throw $e;
-            }
-
-            if (in_array($response->code, [
-                'INVALID_MODULE',
-                'INVALID_URL_PATTERN',
-            ])) {
-                throw new NonExistingModule($response->message);
-            }
-
-            throw $e;
+            return $response;
         }
     }
 
@@ -288,17 +203,6 @@ class Client
         return $this->oAuthClient->getRegion();
     }
 
-    /**
-     * @throws ApiError
-     * @throws NonExistingModule
-     * @throws \Weble\ZohoClient\Exception\AccessDeniedException
-     * @throws \Weble\ZohoClient\Exception\ApiError
-     * @throws \Weble\ZohoClient\Exception\CannotGenerateAccessToken
-     * @throws \Weble\ZohoClient\Exception\CannotGenerateRefreshToken
-     * @throws \Weble\ZohoClient\Exception\GrantCodeNotSetException
-     * @throws \Weble\ZohoClient\Exception\InvalidGrantCodeException
-     * @throws \Weble\ZohoClient\Exception\RefreshTokenNotSet
-     */
     public function get(string $url, string $id = null, array $params = [])
     {
         if ($id !== null) {
@@ -309,55 +213,6 @@ class Client
         return $this->processResult($result);
     }
 
-    /**
-     * @param ResponseInterface|Response $response
-     *
-     * @return array|mixed|string
-     * @throws ApiError
-     */
-    public function processResult($response)
-    {
-        // All ok, probably not json, like PDF?
-        if ($response->getStatusCode() < 200 || $response->getStatusCode() > 299) {
-            throw new ApiError('Response from Zoho is not success. Message: ' . $response->getReasonPhrase());
-        }
-
-        try {
-            $result = json_decode($response->getBody(), true);
-        } catch (\InvalidArgumentException $e) {
-
-            // All ok, probably not json, like PDF?
-            if ($response->getStatusCode() >= 200 && $response->getStatusCode() <= 299) {
-                return (string)$response->getBody();
-            }
-
-            throw new ApiError('Response from Zoho is not success. Message: ' . $response->getReasonPhrase());
-        }
-
-        if (!$result) {
-            // All ok, probably not json, like PDF?
-            if ($response->getStatusCode() >= 200 && $response->getStatusCode() <= 299) {
-                return (string)$response->getBody();
-            }
-
-            throw new ApiError('Response from Zoho is not success. Message: ' . $response->getReasonPhrase());
-        }
-
-        return $result;
-    }
-
-    /**
-     * @return array|mixed|string
-     * @throws ApiError
-     * @throws NonExistingModule
-     * @throws \Weble\ZohoClient\Exception\AccessDeniedException
-     * @throws \Weble\ZohoClient\Exception\ApiError
-     * @throws \Weble\ZohoClient\Exception\CannotGenerateAccessToken
-     * @throws \Weble\ZohoClient\Exception\CannotGenerateRefreshToken
-     * @throws \Weble\ZohoClient\Exception\GrantCodeNotSetException
-     * @throws \Weble\ZohoClient\Exception\InvalidGrantCodeException
-     * @throws \Weble\ZohoClient\Exception\RefreshTokenNotSet
-     */
     public function post(string $url, array $params = [], array $queryParams = [])
     {
         return $this->processResult($this->call($url, 'POST', [
@@ -366,17 +221,6 @@ class Client
         ]));
     }
 
-    /**
-     * @throws ApiError
-     * @throws NonExistingModule
-     * @throws \Weble\ZohoClient\Exception\AccessDeniedException
-     * @throws \Weble\ZohoClient\Exception\ApiError
-     * @throws \Weble\ZohoClient\Exception\CannotGenerateAccessToken
-     * @throws \Weble\ZohoClient\Exception\CannotGenerateRefreshToken
-     * @throws \Weble\ZohoClient\Exception\GrantCodeNotSetException
-     * @throws \Weble\ZohoClient\Exception\InvalidGrantCodeException
-     * @throws \Weble\ZohoClient\Exception\RefreshTokenNotSet
-     */
     public function put(string $url, array $params = [], array $queryParams = [])
     {
         return $this->processResult($this->call($url, 'PUT', [
@@ -385,18 +229,6 @@ class Client
         ]));
     }
 
-    /**
-     * @return bool
-     * @throws ApiError
-     * @throws NonExistingModule
-     * @throws \Weble\ZohoClient\Exception\AccessDeniedException
-     * @throws \Weble\ZohoClient\Exception\ApiError
-     * @throws \Weble\ZohoClient\Exception\CannotGenerateAccessToken
-     * @throws \Weble\ZohoClient\Exception\CannotGenerateRefreshToken
-     * @throws \Weble\ZohoClient\Exception\GrantCodeNotSetException
-     * @throws \Weble\ZohoClient\Exception\InvalidGrantCodeException
-     * @throws \Weble\ZohoClient\Exception\RefreshTokenNotSet
-     */
     public function delete(string $url, $id)
     {
         return $this->processResult($this->call($url . '/' . $id, 'DELETE'));
@@ -405,5 +237,41 @@ class Client
     public function getHttpClient(): \GuzzleHttp\Client
     {
         return $this->client;
+    }
+
+    public function processResult(ResponseInterface $response)
+    {
+        if (!$this->isSuccessfulResponse($response)) {
+            ApiError::throwFromResponse($response);
+        }
+
+        try {
+            $result = json_decode($response->getBody(), true);
+        } catch (\InvalidArgumentException $e) {
+            return $this->getResponseContent($response);
+        }
+
+        if (!$result) {
+            return $this->getResponseContent($response);
+        }
+
+        return $result;
+    }
+
+    protected function isSuccessfulResponse(ResponseInterface $response): bool
+    {
+        return $response->getStatusCode() >= 200 && $response->getStatusCode() < 300;
+    }
+
+    protected function getResponseContent(ResponseInterface $response): string
+    {
+        $body = (string)$response->getBody();
+
+        // If response is not a json, it's probably a PDF or a binary content.
+        if (strlen($body) > 0) {
+            return $body;
+        }
+
+        ApiError::throwFromResponse($response);
     }
 }

@@ -14,12 +14,19 @@ class Leads extends Records
     /**
      * @see https://www.zoho.com/crm/developer/docs/api/convert-lead.html
      */
-    public function convertLead($leadId, $data = [])
+    public function convertLead(string $leadId, array $data = [])
     {
         return $this->doAction($leadId, 'convert', [
-            'data' => [[
-                'overwrite' => false,
-            ]],
-        ])['data'][0] ?? [];
+                'data' => [
+                    [
+                        'overwrite' => false,
+                    ]
+                ],
+            ])['data'][0] ?? [];
+    }
+
+    public function convert(string $leadId, array $data = [])
+    {
+        return $this->convertLead($leadId, $data);
     }
 }

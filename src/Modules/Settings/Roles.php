@@ -2,27 +2,18 @@
 
 namespace Webleit\ZohoCrmApi\Modules\Settings;
 
+use Webleit\ZohoCrmApi\Models\Settings\Role;
 use Webleit\ZohoCrmApi\Modules\Module;
 
-/**
- * Class Users
- * @package Webleit\ZohoCrmApi\Modules
- */
 class Roles extends Module
 {
-    /**
-     * @return string
-     */
-    public function getUrlPath()
+    public function getUrlPath(): string
     {
         return 'settings/roles';
     }
 
-    /**
-     * @return string
-     */
-    public function getModelClassName()
+    public function getModelClassName(): string
     {
-        return \Webleit\ZohoCrmApi\Models\Settings\Role::class;
+        return Role::class;
     }
 }
