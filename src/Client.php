@@ -87,8 +87,6 @@ class Client
 
         if ($this->throttle) {
             $this->enableThrottling($maxRequests, $duration);
-        } else {
-            $this->client = new \GuzzleHttp\Client();
         }
 
         return $this;
