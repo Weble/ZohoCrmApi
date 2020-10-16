@@ -13,56 +13,59 @@ class Modules extends Module
 {
     /**
      * @param $module
-     * @return \Tightenco\Collect\Support\Collection|static
+     * @return \Illuminate\Support\Collection|static
      * @throws \Webleit\ZohoCrmApi\Exception\ApiError
      * @throws \Webleit\ZohoCrmApi\Exception\GrantCodeNotSetException
      */
-    public function getRelatedListsForModule ($module)
+    public function getRelatedListsForModule($module)
     {
         if ($module instanceof \Webleit\ZohoCrmApi\Models\Settings\Module) {
             $module = $module->module_name;
         }
 
         $fieldsModule = new RelatedLists($this->getClient());
+
         return $fieldsModule->getList([
-            'module' => $module
+            'module' => $module,
         ]);
     }
 
     /**
      * @param $module
-     * @return \Tightenco\Collect\Support\Collection|static
+     * @return \Illuminate\Support\Collection|static
      * @throws \Webleit\ZohoCrmApi\Exception\ApiError
      * @throws \Webleit\ZohoCrmApi\Exception\GrantCodeNotSetException
      */
-    public function getCustomViewsForModule ($module)
+    public function getCustomViewsForModule($module)
     {
         if ($module instanceof \Webleit\ZohoCrmApi\Models\Settings\Module) {
             $module = $module->module_name;
         }
 
         $fieldsModule = new CustomViews($this->getClient());
+
         return $fieldsModule->getList([
-            'module' => $module
+            'module' => $module,
         ]);
     }
 
     /**
      * @param $module
-     * @return \Tightenco\Collect\Support\Collection|static
+     * @return \Illuminate\Support\Collection|static
      * @throws \Webleit\ZohoCrmApi\Exception\ApiError
      * @throws \Webleit\ZohoCrmApi\Exception\GrantCodeNotSetException
      */
-    public function getFieldsForModule ($module)
+    public function getFieldsForModule($module)
     {
         if ($module instanceof \Webleit\ZohoCrmApi\Models\Settings\Module) {
             $module = $module->module_name;
         }
 
         $fieldsModule = new Fields($this->getClient());
+
         try {
             return $fieldsModule->getList([
-                'module' => $module
+                'module' => $module,
             ]);
         } catch (NonExistingModule $e) {
             return collect([]);
@@ -71,19 +74,20 @@ class Modules extends Module
 
     /**
      * @param $module
-     * @return \Tightenco\Collect\Support\Collection|static
+     * @return \Illuminate\Support\Collection|static
      * @throws \Webleit\ZohoCrmApi\Exception\ApiError
      * @throws \Webleit\ZohoCrmApi\Exception\GrantCodeNotSetException
      */
-    public function getLayoutsForModule ($module)
+    public function getLayoutsForModule($module)
     {
         if ($module instanceof \Webleit\ZohoCrmApi\Models\Settings\Module) {
             $module = $module->module_name;
         }
 
         $fieldsModule = new Layouts($this->getClient());
+
         return $fieldsModule->getList([
-            'module' => $module
+            'module' => $module,
         ]);
     }
 
@@ -92,15 +96,16 @@ class Modules extends Module
      * @param $id
      * @return \Webleit\ZohoCrmApi\Models\Model
      */
-    public function getLayoutForModule ($module, $id)
+    public function getLayoutForModule($module, $id)
     {
         if ($module instanceof \Webleit\ZohoCrmApi\Models\Settings\Module) {
             $module = $module->module_name;
         }
 
         $fieldsModule = new Layouts($this->getClient());
+
         return $fieldsModule->get($id, [
-            'module' => $module
+            'module' => $module,
         ]);
     }
 
@@ -109,15 +114,16 @@ class Modules extends Module
      * @param $id
      * @return \Webleit\ZohoCrmApi\Models\Model
      */
-    public function getCustomViewForModule ($module, $id)
+    public function getCustomViewForModule($module, $id)
     {
         if ($module instanceof \Webleit\ZohoCrmApi\Models\Settings\Module) {
             $module = $module->module_name;
         }
 
         $fieldsModule = new CustomViews($this->getClient());
+
         return $fieldsModule->get($id, [
-            'module' => $module
+            'module' => $module,
         ]);
     }
 
@@ -126,7 +132,7 @@ class Modules extends Module
      * @param string $id
      * @return \Webleit\ZohoCrmApi\Models\Settings\Module
      */
-    public function get ($module, array $params = [])
+    public function get($module, array $params = [])
     {
         if ($module instanceof \Webleit\ZohoCrmApi\Models\Settings\Module) {
             $module = $module->module_name;
@@ -138,7 +144,7 @@ class Modules extends Module
     /**
      * @return string
      */
-    public function getUrlPath ()
+    public function getUrlPath()
     {
         return 'settings/modules';
     }
@@ -146,7 +152,7 @@ class Modules extends Module
     /**
      * @return string
      */
-    public function getModelClassName ()
+    public function getModelClassName()
     {
         return \Webleit\ZohoCrmApi\Models\Settings\Module::class;
     }

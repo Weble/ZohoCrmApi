@@ -13,7 +13,7 @@ class Module extends Model
     /**
      * @return mixed
      */
-    public function getFields ()
+    public function getFields()
     {
         return $this->getModule()->getFieldsForModule($this);
     }
@@ -21,7 +21,7 @@ class Module extends Model
     /**
      * @return mixed
      */
-    public function getRelatedLists ()
+    public function getRelatedLists()
     {
         return $this->getModule()->getRelatedListsForModule($this);
     }
@@ -29,7 +29,7 @@ class Module extends Model
     /**
      * @return mixed
      */
-    public function getCustomViews ()
+    public function getCustomViews()
     {
         return $this->getModule()->getCustomViewsForModule($this);
     }
@@ -37,7 +37,7 @@ class Module extends Model
     /**
      * @return mixed
      */
-    public function getLayouts ()
+    public function getLayouts()
     {
         return $this->getModule()->getLayoutsForModule($this);
     }

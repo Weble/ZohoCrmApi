@@ -18,8 +18,8 @@ class Leads extends Records
     {
         return $this->doAction($leadId, 'convert', [
             'data' => [[
-                'overwrite' => false
-            ]]
+                'overwrite' => false,
+            ]],
         ])['data'][0] ?? [];
     }
 }

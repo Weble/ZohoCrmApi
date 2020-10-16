@@ -11,10 +11,7 @@ use Weble\ZohoClient\OAuthClient;
 use Webleit\ZohoCrmApi\Client;
 use Webleit\ZohoCrmApi\Enums\Mode;
 use Webleit\ZohoCrmApi\Enums\UserType;
-use Webleit\ZohoCrmApi\Exception\NonExistingModule;
-use Webleit\ZohoCrmApi\Models\Request;
 use Webleit\ZohoCrmApi\Models\Settings\Layout;
-use Webleit\ZohoCrmApi\Models\Template;
 use Webleit\ZohoCrmApi\Models\User;
 use Webleit\ZohoCrmApi\Modules\Records;
 use Webleit\ZohoCrmApi\ZohoCrm;
@@ -34,7 +31,7 @@ class ApiTest extends TestCase
     /**
      * setup
      */
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass():void
     {
         $auth = self::getConfig();
 
@@ -56,11 +53,12 @@ class ApiTest extends TestCase
             $region = Region::make($auth->region);
         }
 
-        $filesystemAdapter = new Local(sys_get_temp_dir());
+        $filesystemAdapter = new Local(__DIR__ . '/temp');
         $filesystem = new Filesystem($filesystemAdapter);
         $pool = new FilesystemCachePool($filesystem);
 
         $client = new OAuthClient($auth->client_id, $auth->client_secret);
+        $client->setGrantCode($auth->grant_token);
         $client->setRefreshToken($auth->refresh_token);
         $client->setRegion($region);
         $client->offlineMode();
@@ -76,7 +74,16 @@ class ApiTest extends TestCase
             $authFile = __DIR__ . '/config.json';
         }
 
-        return json_decode(file_get_contents($authFile));
+        $config = json_decode(file_get_contents($authFile));
+
+        foreach ($config as $key => $value) {
+            $envValue = $_SERVER[strtoupper('ZOHO_' . $key)] ?? null;
+            if ($envValue) {
+                $config->$key = $envValue;
+            }
+        }
+
+        return $config;
     }
 
     /**
@@ -168,13 +175,15 @@ class ApiTest extends TestCase
 
         // Unreachable modules
 
-        foreach ($modules as $module => $moduleName) {
-            try {
-                $this->assertGreaterThanOrEqual(0, self::$zoho->$module->getList()->count());
-            } catch (NonExistingModule $e) {
+        $this->assertGreaterThan(0, $modules->count());
+    }
 
-            }
-        }
+    /**
+     * @test
+     */
+    public function getGetSalesOrders()
+    {
+        $this->assertGreaterThan(0, self::$zoho->sales_orders->getList()->count());
     }
 
     /**
@@ -185,16 +194,60 @@ class ApiTest extends TestCase
         /** @var Records $leadModule */
         $leadModule = self::$zoho->leads;
         $response = $leadModule->create([
-            'Company'    => 'Alpha ltd',
-            'Last_Name'  => 'Doe',
-            'First_Name' => 'John'
+            'Last_Name' => 'Doe',
+            'First_Name' => 'John',
         ]);
 
         $this->assertNotEmpty($response->getId());
 
         $lead = self::$zoho->leads->get($response->getId());
 
-        $this->assertEquals('Alpha ltd', $lead->Company);
+
+        $this->assertEquals('John', $lead->First_Name);
+        $this->assertEquals('Doe', $lead->Last_Name);
+    }
+
+    /**
+     * @test
+     */
+    public function canSearch()
+    {
+        /** @var Records $leadModule */
+        $leadModule = self::$zoho->leads;
+
+        $lead = $leadModule->create([
+            'Last_Name' => 'Doe',
+            'First_Name' => 'John',
+            'Email' => 'test@example.com',
+        ]);
+
+        $lead = $leadModule->get($lead->getId());
+
+        $response = $leadModule->searchRaw("(Email:equals:{$lead->Email})");
+        $this->assertGreaterThan(0, $response->count());
+    }
+
+    /**
+     * @test
+     */
+    public function canUploadPhoto()
+    {
+        /** @var Records $leadModule */
+        $leadModule = self::$zoho->leads;
+
+        $lead = $leadModule->create([
+            'Last_Name' => 'Doe',
+            'First_Name' => 'John',
+            'Email' => 'test@example.com',
+        ]);
+
+        $lead = $leadModule->get($lead->getId());
+
+        $response = $lead->uploadPhoto('logo.png', file_get_contents(__DIR__. '/temp/zoho-logo-512px.png'));
+        $this->assertTrue($response);
+
+        $response = $leadModule->uploadPhoto($lead->getId(), 'logo.png', file_get_contents(__DIR__. '/temp/zoho-logo-512px.png'));
+        $this->assertTrue($response);
     }
 
     /**
@@ -208,14 +261,14 @@ class ApiTest extends TestCase
         $lead = self::$zoho->leads->getList()->first();
 
         $response = $leadModule->update($lead->getId(), [
-            'Company' => 'Beta',
+            'Last_Name' => 'NoName',
         ]);
 
         $this->assertNotEmpty($response->getId());
 
         $lead = self::$zoho->leads->get($response->getId());
 
-        $this->assertEquals('Beta', $lead->Company);
+        $this->assertEquals('NoName', $lead->Last_Name);
     }
 
     /**
@@ -225,20 +278,17 @@ class ApiTest extends TestCase
     {
         $data = [
             [
-                'Company'    => 'Alpha ltd',
-                'Last_Name'  => 'Doe',
-                'First_Name' => 'John'
+                'Last_Name' => 'Doe',
+                'First_Name' => 'John',
             ],
             [
-                'Company'    => 'Alpha ltd',
-                'Last_Name'  => 'Doe',
-                'First_Name' => 'John'
+                'Last_Name' => 'Doe',
+                'First_Name' => 'John',
             ],
             [
-                'Company'    => 'Beta ltd',
-                'Last_Name'  => 'Doe',
-                'First_Name' => 'John'
-            ]
+                'Last_Name' => 'Doe',
+                'First_Name' => 'John',
+            ],
         ];
 
         /** @var Records $leadModule */
@@ -252,7 +302,7 @@ class ApiTest extends TestCase
         foreach ($data as $k => $row) {
             $response = $responses->get($k);
             $lead = self::$zoho->leads->get($response->getId());
-            $this->assertEquals($row['Company'], $lead->Company);
+            $this->assertEquals($row['Last_Name'], $lead->Last_Name);
         }
     }
 
@@ -263,20 +313,17 @@ class ApiTest extends TestCase
     {
         $data = [
             [
-                'Company'    => 'Alpha ltd',
-                'Last_Name'  => 'Doe',
-                'First_Name' => 'John'
+                'Last_Name' => 'Doe',
+                'First_Name' => 'John',
             ],
             [
-                'Company'    => 'Alpha ltd',
-                'First_Name' => 'John'
+                'First_Name' => 'John',
                 // This one misses last name, and will fail
             ],
             [
-                'Company'    => 'Beta ltd',
-                'Last_Name'  => 'Doe',
-                'First_Name' => 'John'
-            ]
+                'Last_Name' => 'Doe',
+                'First_Name' => 'John',
+            ],
         ];
 
         /** @var Records $leadModule */
@@ -284,9 +331,8 @@ class ApiTest extends TestCase
         $responses = $leadModule->createMany($data);
 
         $this->assertNotEmpty($responses[0]->getId());
-        $this->assertEmpty($responses[1]);
+        $this->assertEquals('error', $responses[1]['status']);
         $this->assertNotEmpty($responses[2]->getId());
-
     }
 
 
@@ -297,15 +343,13 @@ class ApiTest extends TestCase
     {
         $leadModule = self::$zoho->leads;
         $response = $leadModule->create([
-            'Company'    => 'Alpha ltd',
-            'Last_Name'  => 'Doe',
-            'First_Name' => 'John'
+            'Last_Name' => 'Doe',
+            'First_Name' => 'John',
         ]);
 
         $conversions = $leadModule->convertLead($response->getId());
 
         $this->assertArrayHasKey('Contacts', $conversions);
-        $this->assertArrayHasKey('Accounts', $conversions);
         $this->assertArrayHasKey('Deals', $conversions);
     }
 
@@ -376,38 +420,6 @@ class ApiTest extends TestCase
     /**
      * @test
      */
-    public function canCreateSalesOrder()
-    {
-        /** @var Records $module */
-        $module = new Records(self::$client, 'Sales_Orders');
-
-        /** @var Records $module */
-        $productsModule = new Records(self::$client, 'Products');
-        $product = $productsModule->create([
-            'Product_Name' => 'Test'
-        ]);
-
-        $response = $module->create([
-            'Subject'         => '123',
-            'Product_Details' => [
-                [
-                    'product'    => $product->getId(),
-                    'Unit_Price' => 10,
-                    'quantity'   => 2
-                ]
-            ]
-        ]);
-
-        $this->assertNotEmpty($response->getId());
-
-        $order = $module->get($response->getId());
-
-        $this->assertEquals('123', $order->Subject);
-    }
-
-    /**
-     * @test
-     */
     public function canGetCustomModuleRecord()
     {
         /** @var Records $module */
@@ -415,48 +427,11 @@ class ApiTest extends TestCase
 
         $name = uniqid();
         $response = $module->create([
-            'Name' => $name
+            'Name' => $name,
         ]);
 
         $this->assertNotEmpty($response->getId());
         $item = $module->get($response->getId());
         $this->assertEquals($name, $item->Name);
-    }
-
-
-    /**
-     * @test
-     */
-    public function getCorrectApiUrl()
-    {
-        self::$client->sandboxMode();
-        $this->assertEquals(Client::ZOHOCRM_API_URL_SANDBOX_US, self::$client->getUrl());
-        self::$client->developerMode();
-        $this->assertEquals(Client::ZOHOCRM_API_URL_DEVELOPER_US, self::$client->getUrl());
-        self::$client->productionMode();
-        $this->assertEquals(Client::ZOHOCRM_API_URL_PRODUCTION_US, self::$client->getUrl());
-
-        self::$client->cnRegion()->sandboxMode();
-        $this->assertEquals(Client::ZOHOCRM_API_URL_SANDBOX_CN, self::$client->getUrl());
-        self::$client->cnRegion()->developerMode();
-        $this->assertEquals(Client::ZOHOCRM_API_URL_DEVELOPER_CN, self::$client->getUrl());
-        self::$client->cnRegion()->productionMode();
-        $this->assertEquals(Client::ZOHOCRM_API_URL_PRODUCTION_CN, self::$client->getUrl());
-
-        self::$client->euRegion()->sandboxMode();
-        $this->assertEquals(Client::ZOHOCRM_API_URL_SANDBOX_EU, self::$client->getUrl());
-        self::$client->euRegion()->developerMode();
-        $this->assertEquals(Client::ZOHOCRM_API_URL_DEVELOPER_EU, self::$client->getUrl());
-        self::$client->euRegion()->productionMode();
-        $this->assertEquals(Client::ZOHOCRM_API_URL_PRODUCTION_EU, self::$client->getUrl());
-
-        self::$client->usRegion()->sandboxMode();
-        $this->assertEquals(Client::ZOHOCRM_API_URL_SANDBOX_US, self::$client->getUrl());
-        self::$client->usRegion()->developerMode();
-        $this->assertEquals(Client::ZOHOCRM_API_URL_DEVELOPER_US, self::$client->getUrl());
-        self::$client->usRegion()->productionMode();
-        $this->assertEquals(Client::ZOHOCRM_API_URL_PRODUCTION_US, self::$client->getUrl());
-
-        self::$client->usRegion()->developerMode();
     }
 }

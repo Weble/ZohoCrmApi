@@ -2,10 +2,9 @@
 
 namespace Webleit\ZohoCrmApi;
 
-use Tightenco\Collect\Support\Collection;
+use Illuminate\Support\Collection;
 use Webleit\ZohoCrmApi\Mixins\ProvidesModules;
 use Webleit\ZohoCrmApi\Models\Settings\Module;
-use Webleit\ZohoCrmApi\Modules;
 use Webleit\ZohoCrmApi\Modules\Records;
 
 /**
@@ -34,10 +33,10 @@ class ZohoCrm implements Contracts\ProvidesModules
      */
     protected $availableModules = [
         'settings' => Modules\Settings::class,
-        'users'    => Modules\Users::class,
-        'org'      => Modules\Org::class,
-        'records'  => Records::class,
-        'leads'    => Modules\Leads::class
+        'users' => Modules\Users::class,
+        'org' => Modules\Org::class,
+        'records' => Records::class,
+        'leads' => Modules\Leads::class,
     ];
 
     /**
@@ -82,7 +81,7 @@ class ZohoCrm implements Contracts\ProvidesModules
 
     public function getApiModules(): Collection
     {
-        if (!$this->apiModules) {
+        if (! $this->apiModules) {
             $this->apiModules = $this->settings->modules->getList()->mapWithKeys(function (Module $module) {
                 return collect([strtolower($module->api_name) => $module]);
             });

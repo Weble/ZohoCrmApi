@@ -4,3 +4,6 @@ vendor
 docs
 test.php
 tests/config.json
+.env
+.phpunit.result.cache
+tests/temp/cache

@@ -2,7 +2,7 @@
 namespace Webleit\ZohoCrmApi\Models;
 
 use Doctrine\Common\Inflector\Inflector;
-use Tightenco\Collect\Contracts\Support\Arrayable;
+use Illuminate\Contracts\Support\Arrayable;
 use Webleit\ZohoCrmApi\Contracts\Module;
 
 /**
@@ -44,7 +44,7 @@ abstract class Model implements \JsonSerializable, Arrayable
      * @param $name
      * @return mixed
      */
-    function __get($name)
+    public function __get($name)
     {
         if (isset($this->data[$name])) {
             return $this->data[$name];
@@ -55,7 +55,7 @@ abstract class Model implements \JsonSerializable, Arrayable
      * @param $name
      * @param $value
      */
-    function __set($name, $value)
+    public function __set($name, $value)
     {
         $this->data[$name] = $value;
     }
@@ -65,7 +65,7 @@ abstract class Model implements \JsonSerializable, Arrayable
      * @param $arguments
      * @return mixed
      */
-    function __call($name, $arguments)
+    public function __call($name, $arguments)
     {
         // add "id" as a parameter
         array_unshift($arguments, $this->getId());
@@ -115,7 +115,7 @@ abstract class Model implements \JsonSerializable, Arrayable
      */
     public function isNew()
     {
-        return !$this->getId();
+        return ! $this->getId();
     }
 
     /**
@@ -125,6 +125,7 @@ abstract class Model implements \JsonSerializable, Arrayable
     public function getId()
     {
         $key = $this->getKeyName();
+
         return $this->$key ? $this->$key : false;
     }
 

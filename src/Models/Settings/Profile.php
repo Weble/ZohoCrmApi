@@ -10,5 +10,4 @@ use Webleit\ZohoCrmApi\Models\Model;
  */
 class Profile extends Model
 {
-
 }
