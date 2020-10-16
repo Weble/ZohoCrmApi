@@ -25,11 +25,8 @@ class ListParameters implements Arrayable, Jsonable, JsonSerializable
 
     public function __construct(array $params = [])
     {
-        foreach ($this->params as $key => $value) {
-            if (! isset($params[$key])) {
-                continue;
-            }
-            $this->params[$key] = $params[$key];
+        foreach ($params as $key => $value) {
+            $this->params[$key] = $value;
         }
     }
 
