@@ -292,6 +292,20 @@ class ApiTest extends TestCase
     /**
      * @test
      */
+    public function canListLeads()
+    {
+        /** @var Records $leadModule */
+        $leadModule = self::$zoho->leads;
+        $leads = $leadModule->getList();
+
+        dump($leads->toArray());
+
+        $this->assertGreaterThan(0, $leads->count());
+    }
+
+    /**
+     * @test
+     */
     public function canCreateLeads()
     {
         $data = [
