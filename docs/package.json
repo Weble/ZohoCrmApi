@@ -1,0 +1,19 @@
+{
+  "name": "zohocrmapidocs",
+  "version": "0.0.1",
+  "description": "Documentation for the Zoho CRM SDK",
+  "main": "index.js",
+  "authors": {
+    "name": "Weble",
+    "email": "daniele@weble.it"
+  },
+  "repository": "https://github.com/Weble/ZohoCrmApi/ZohoCRM PHP SDK - Api Docs - Weble",
+  "scripts": {
+    "dev": "vuepress dev src",
+    "build": "vuepress build src"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "vuepress": "^1.5.3"
+  }
+}

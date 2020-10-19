@@ -6,8 +6,5 @@ use Webleit\ZohoCrmApi\Client;
 
 interface Module
 {
-    /**
-     * @return Client
-     */
-    public function getClient();
+    public function getClient(): Client;
 }

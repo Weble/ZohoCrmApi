@@ -11,9 +11,14 @@ use Weble\ZohoClient\OAuthClient;
 use Webleit\ZohoCrmApi\Client;
 use Webleit\ZohoCrmApi\Enums\Mode;
 use Webleit\ZohoCrmApi\Enums\UserType;
+use Webleit\ZohoCrmApi\Exception\ApiError;
+use Webleit\ZohoCrmApi\Exception\MandatoryDataNotFound;
 use Webleit\ZohoCrmApi\Models\Settings\Layout;
+use Webleit\ZohoCrmApi\Models\Settings\Role;
 use Webleit\ZohoCrmApi\Models\User;
 use Webleit\ZohoCrmApi\Modules\Records;
+use Webleit\ZohoCrmApi\Request\ListParameters;
+use Webleit\ZohoCrmApi\Request\Pagination;
 use Webleit\ZohoCrmApi\ZohoCrm;
 
 class ApiTest extends TestCase
@@ -31,7 +36,7 @@ class ApiTest extends TestCase
     /**
      * setup
      */
-    public static function setUpBeforeClass():void
+    public static function setUpBeforeClass(): void
     {
         $auth = self::getConfig();
 
@@ -181,6 +186,20 @@ class ApiTest extends TestCase
     /**
      * @test
      */
+    public function canUsePagination()
+    {
+        $leads = self::$zoho->leads;
+        $leads->getList((new ListParameters())->perPage(10)->toArray());
+        $pagination = $leads->pagination();
+
+        $this->assertInstanceOf(Pagination::class, $pagination);
+        $this->assertEquals(1, $pagination->page());
+        $this->assertEquals(10, $pagination->perPage());
+    }
+
+    /**
+     * @test
+     */
     public function getGetSalesOrders()
     {
         $this->assertGreaterThan(0, self::$zoho->sales_orders->getList()->count());
@@ -243,10 +262,10 @@ class ApiTest extends TestCase
 
         $lead = $leadModule->get($lead->getId());
 
-        $response = $lead->uploadPhoto('logo.png', file_get_contents(__DIR__. '/temp/zoho-logo-512px.png'));
+        $response = $lead->uploadPhoto('logo.png', file_get_contents(__DIR__ . '/temp/zoho-logo-512px.png'));
         $this->assertTrue($response);
 
-        $response = $leadModule->uploadPhoto($lead->getId(), 'logo.png', file_get_contents(__DIR__. '/temp/zoho-logo-512px.png'));
+        $response = $leadModule->uploadPhoto($lead->getId(), 'logo.png', file_get_contents(__DIR__ . '/temp/zoho-logo-512px.png'));
         $this->assertTrue($response);
     }
 
@@ -255,9 +274,7 @@ class ApiTest extends TestCase
      */
     public function canUpdateLead()
     {
-        /** @var Records $leadModule */
         $leadModule = self::$zoho->leads;
-        /** @var \Webleit\ZohoCrmApi\Models\Record $lead */
         $lead = self::$zoho->leads->getList()->first();
 
         $response = $leadModule->update($lead->getId(), [
@@ -269,6 +286,21 @@ class ApiTest extends TestCase
         $lead = self::$zoho->leads->get($response->getId());
 
         $this->assertEquals('NoName', $lead->Last_Name);
+        $this->assertEquals($response->getId(), $lead->getId());
+    }
+
+    /**
+     * @test
+     */
+    public function canListLeads()
+    {
+        /** @var Records $leadModule */
+        $leadModule = self::$zoho->leads;
+        $leads = $leadModule->getList();
+
+        dump($leads->toArray());
+
+        $this->assertGreaterThan(0, $leads->count());
     }
 
     /**
@@ -433,5 +465,33 @@ class ApiTest extends TestCase
         $this->assertNotEmpty($response->getId());
         $item = $module->get($response->getId());
         $this->assertEquals($name, $item->Name);
+    }
+
+    /**
+     * @test
+     */
+    public function throwsExceptionOnInvalidRecordId()
+    {
+        $module = self::$zoho->leads;
+
+        $this->expectException(ApiError::class);
+
+        $module->get('00000000000');
+
+        $this->assertEquals(404, $this->getExpectedExceptionCode());
+    }
+
+    /**
+     * @test
+     */
+    public function throwsExceptionOnInvalidData()
+    {
+        $leadModule = self::$zoho->leads;
+
+        $this->expectException(MandatoryDataNotFound::class);
+
+        $leadModule->create([
+            'Test' => 'John',
+        ]);
     }
 }

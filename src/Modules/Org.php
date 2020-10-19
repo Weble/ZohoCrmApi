@@ -2,43 +2,23 @@
 
 namespace Webleit\ZohoCrmApi\Modules;
 
-/**
- * Class Users
- * @package Webleit\ZohoCrmApi\Modules
- */
 class Org extends Module
 {
-    /**
-     * @return string
-     */
-    public function getUrlPath()
+    public function getUrlPath(): string
     {
         return 'org';
     }
 
-    /**
-     * @return string
-     */
-    protected function getResourceKey()
+    protected function getResourceKey(): string
     {
         return 'org';
     }
 
-    /**
-     * @return string
-     */
-    public function getModelClassName()
+    public function getModelClassName(): string
     {
         return \Webleit\ZohoCrmApi\Models\Org::class;
     }
 
-    /**
-     * @param null $id
-     * @param array $params
-     * @return array|mixed|string|\Webleit\ZohoCrmApi\Models\Model
-     * @throws \Webleit\ZohoCrmApi\Exception\ApiError
-     * @throws \Webleit\ZohoCrmApi\Exception\GrantCodeNotSetException
-     */
     public function get($id = null, $params = [])
     {
         $item = $this->client->get($this->getUrl());
