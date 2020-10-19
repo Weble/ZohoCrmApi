@@ -1,7 +1,7 @@
 {
   "scripts": {
-    "docs:build": "vuepress build docs",
-    "docs:dev": "vuepress dev docs"
+    "docs:build": "vuepress build docs/src",
+    "docs:dev": "vuepress dev docs/src"
   },
   "dependencies": {
     "vuepress": "^1.7.1"
