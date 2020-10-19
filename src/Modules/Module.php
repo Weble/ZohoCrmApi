@@ -7,6 +7,7 @@ use Illuminate\Support\Collection;
 use Webleit\ZohoCrmApi\Client;
 use Webleit\ZohoCrmApi\Mixins\HasInflector;
 use Webleit\ZohoCrmApi\Models\Model;
+use Webleit\ZohoCrmApi\RecordCollection;
 use Webleit\ZohoCrmApi\Request\Pagination;
 
 abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
@@ -31,18 +32,18 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
         $this->client = $client;
     }
 
-    public function getList(array $params = []): Collection
+    public function getList(array $params = []): RecordCollection
     {
         $list = $this->client->getList($this->getUrl(), $params);
 
-        $collection = new Collection($list[$this->getResourceKey()]);
+        $collection = new RecordCollection($list[$this->getResourceKey()]);
         $collection = $collection->mapWithKeys(function ($item) {
             $item = $this->make($item);
 
             return [$item->getId() => $item];
         });
 
-        $this->pagination = new Pagination($list['info'] ?? []);
+        $collection->withPagination(new Pagination($list['info'] ?? []));
 
         return $collection;
     }
@@ -56,16 +57,6 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
         $data = array_shift($items);
 
         return $this->make($data ?: []);
-    }
-
-    public function pagination(): Pagination
-    {
-        if (! $this->pagination) {
-            $list = $this->client->getList($this->getUrl());
-            $this->pagination = new Pagination($list['info'] ?? []);
-        }
-
-        return $this->pagination;
     }
 
     public function create(array $data, array $params = [], array $triggers = [

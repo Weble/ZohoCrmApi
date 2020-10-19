@@ -5,6 +5,7 @@ namespace Webleit\ZohoCrmApi\Modules;
 use Illuminate\Support\Collection;
 use Webleit\ZohoCrmApi\Client;
 use Webleit\ZohoCrmApi\Models\Record;
+use Webleit\ZohoCrmApi\RecordCollection;
 
 class Records extends Module
 {
@@ -29,16 +30,16 @@ class Records extends Module
         $this->module = $module;
     }
 
-    public function searchRaw(string $criteria): Collection
+    public function searchRaw(string $criteria): RecordCollection
     {
         return $this->search($criteria, 'criteria');
     }
 
-    public function search(string $criteria, string $key = 'criteria'): Collection
+    public function search(string $criteria, string $key = 'criteria'): RecordCollection
     {
         $list = $this->client->getList($this->getUrl() . '/search', [$key => $criteria]);
 
-        $collection = new Collection($list[$this->getResourceKey()] ?? []);
+        $collection = new RecordCollection($list[$this->getResourceKey()] ?? []);
         $collection = $collection->mapWithKeys(function ($item) {
             $item = $this->make($item);
 
@@ -48,17 +49,17 @@ class Records extends Module
         return $collection;
     }
 
-    public function searchEmail(string $criteria): Collection
+    public function searchEmail(string $criteria): RecordCollection
     {
         return $this->search($criteria, 'email');
     }
 
-    public function searchPhone(string $criteria): Collection
+    public function searchPhone(string $criteria): RecordCollection
     {
         return $this->search($criteria, 'phone');
     }
 
-    public function searchWord(string $criteria): Collection
+    public function searchWord(string $criteria): RecordCollection
     {
         return $this->search($criteria, 'word');
     }

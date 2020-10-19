@@ -6,7 +6,9 @@ Each of these properties is a ```module``` that lets you interact with the respe
 
 For example, ```$client->leads``` is the Lead module in the CRM, and the ```$client->salesorders``` property is the SalesOrders module in CRM.
 
-Each of the ```records``` module has a set of common methods you can use:
+Each of the ```records``` module has a set of common methods you can use. 
+
+In the docs, we'll always use the ```leads``` module as an example, but **every record module will have the same possibilities**.
 
 
 ## Get a list of records
@@ -125,3 +127,108 @@ For example, a ```$client->leads->getList()``` call with return a collection of 
 ]
 
 ```
+
+## Get a single record
+
+```php
+$zohoCrm = new \Webleit\ZohoCrmApi\Client($oAuthClient);
+$lead = $zohoCrm->leads->get('[ID OF THE LEAD]');
+```
+
+## Create a new Record
+
+You can create a single record with an array of the record data. The array keys **must be the API names used in the CRM**. You can find those in `Settings > Developers > API > Api Names` in zoho crm itself.
+
+```php
+$data = [
+    'First_Name' => 'John',     
+    'Last_Name' => 'Doe',
+    'Email' => 'test@example.com'
+];
+
+
+$zohoCrm = new \Webleit\ZohoCrmApi\Client($oAuthClient);
+$lead = $zohoCrm->leads->create($data);
+````
+
+## Update an existing Record
+
+Same as with record creation, you can edit an existing record with an array of data.
+```php
+$data = [
+    'First_Name' => 'John',     
+    'Last_Name' => 'Doe',
+    'Email' => 'test@example.com'
+];
+
+$zohoCrm = new \Webleit\ZohoCrmApi\Client($oAuthClient);
+$lead = $zohoCrm->leads->update('[LEAD ID]', $data);
+```
+
+## Mass Record Creation
+
+You can also mass-created a list of records. Beware that this will "hide" any error occurring during the creation of the record.
+
+```php
+$data = [
+    [
+        'First_Name' => 'John',     
+        'Last_Name' => 'Doe',
+        'Email' => 'test@example.com'
+    ],
+    [
+        'First_Name' => 'Jane',     
+        'Last_Name' => 'Doe',
+        'Email' => 'test2@example.com'
+    ],
+];
+
+$zohoCrm = new \Webleit\ZohoCrmApi\Client($oAuthClient);
+$lead = $zohoCrm->leads->createMany($data);
+```
+
+## Mass Record Update
+
+You can also mass-update a list of records. Beware that this will "hide" any error occurring during the saving of the record.
+
+```php
+$data = [
+    '[ID OF THE RECORD]' => [
+        'First_Name' => 'John',     
+        'Last_Name' => 'Doe',
+        'Email' => 'test@example.com'
+    ],
+    '[ID OF THE RECORD 2]' => [
+        'First_Name' => 'Jane',     
+        'Last_Name' => 'Doe',
+        'Email' => 'test2@example.com'
+    ],
+];
+
+$zohoCrm = new \Webleit\ZohoCrmApi\Client($oAuthClient);
+$lead = $zohoCrm->leads->updateMany($data);
+```
+
+## Deleting a record
+
+You can delete a record like this:
+
+```php
+$zohoCrm = new \Webleit\ZohoCrmApi\Client($oAuthClient);
+$zohoCrm->leads->delete('[ID OF THE RECORD');
+```
+
+## Getting the list of related records
+
+You can fetch the list of related records from a record like this:
+
+```php
+$zohoCrm = new \Webleit\ZohoCrmApi\Client($oAuthClient);
+$zohoCrm->leads->getRelatedRecords('[ID OF THE RECORD', '[NAME OF THE RELATION]');
+```
+
+## Update a related record
+
+```php
+$zohoCrm = new \Webleit\ZohoCrmApi\Client($oAuthClient);
+$zohoCrm->leads->updateRelatedRecord('[ID OF THE RECORD', '[NAME OF THE RELATION]', '[ID OF THE RELATED RECORD]', $relationData = []);
