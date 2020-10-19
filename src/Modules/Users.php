@@ -2,35 +2,27 @@
 
 namespace Webleit\ZohoCrmApi\Modules;
 
+use Illuminate\Support\Collection;
 use Webleit\ZohoCrmApi\Enums\UserType;
 use Webleit\ZohoCrmApi\Models\User;
 use Webleit\ZohoCrmApi\Modules\Settings as SettingsModules;
 
 /**
- * Class Users
- * @package Webleit\ZohoCrmApi\Modules
- *
  * @property-read SettingsModules\Modules $modules;
  */
 class Users extends Module
 {
-    /**
-     * @return string
-     */
-    public function getUrlPath()
+    public function getUrlPath(): string
     {
         return 'users';
     }
 
-    /**
-     * @return string
-     */
-    public function getModelClassName()
+    public function getModelClassName(): string
     {
         return User::class;
     }
 
-    public function ofType(UserType $type)
+    public function ofType(UserType $type): Collection
     {
         return $this->getList([
             'type' => $type->getValue(),

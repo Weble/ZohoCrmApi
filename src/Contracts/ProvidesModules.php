@@ -2,22 +2,11 @@
 
 namespace Webleit\ZohoCrmApi\Contracts;
 
-/**
- * Interface ProvidesModules
- * @package Webleit\ZohoSignApi\Contracts
- */
+use Illuminate\Support\Collection;
+
 interface ProvidesModules
 {
-    /**
-     * Proxy any module call to the right api call
-     * @param $name
-     * @return mixed
-     */
-    public function createModule($name);
+    public function createModule(string $name): ?Module;
 
-    /**
-     * Get the list of available modules
-     * @return array
-     */
-    public function getAvailableModules();
+    public function getAvailableModules(): Collection;
 }

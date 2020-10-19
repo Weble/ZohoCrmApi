@@ -64,10 +64,6 @@ class ZohoCrm implements Contracts\ProvidesModules
         return $this->createRecordsModule($name);
     }
 
-    /**
-     * @throws \Webleit\ZohoCrmApi\Exception\ApiError
-     * @throws \Webleit\ZohoCrmApi\Exception\GrantCodeNotSetException
-     */
     public function createRecordsModule(string $name): ?Records
     {
         $modules = $this->getApiModules();

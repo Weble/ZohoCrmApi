@@ -2,27 +2,18 @@
 
 namespace Webleit\ZohoCrmApi\Modules\Settings;
 
+use Webleit\ZohoCrmApi\Models\Settings\Layout;
 use Webleit\ZohoCrmApi\Modules\Module;
 
-/**
- * Class Users
- * @package Webleit\ZohoCrmApi\Modules
- */
 class Layouts extends Module
 {
-    /**
-     * @return string
-     */
-    public function getUrlPath()
+    public function getUrlPath(): string
     {
         return 'settings/layouts';
     }
 
-    /**
-     * @return string
-     */
-    public function getModelClassName()
+    public function getModelClassName(): string
     {
-        return \Webleit\ZohoCrmApi\Models\Settings\Layout::class;
+        return Layout::class;
     }
 }

@@ -2,34 +2,22 @@
 
 namespace Webleit\ZohoCrmApi\Modules\Settings;
 
+use Webleit\ZohoCrmApi\Models\Settings\CustomView;
 use Webleit\ZohoCrmApi\Modules\Module;
 
-/**
- * Class Users
- * @package Webleit\ZohoCrmApi\Modules
- */
 class CustomViews extends Module
 {
-    /**
-     * @return string
-     */
-    public function getUrlPath()
+    public function getUrlPath(): string
     {
         return 'settings/custom_views';
     }
 
-    /**
-     * @return string
-     */
-    public function getModelClassName()
+    public function getModelClassName(): string
     {
-        return \Webleit\ZohoCrmApi\Models\Settings\CustomView::class;
+        return CustomView::class;
     }
 
-    /**
-     * @return string
-     */
-    protected function getResourceKey()
+    protected function getResourceKey(): string
     {
         return 'custom_views';
     }

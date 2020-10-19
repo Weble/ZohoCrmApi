@@ -2,58 +2,37 @@
 
 namespace Webleit\ZohoCrmApi\Models\Settings;
 
+use Illuminate\Support\Collection;
 use Webleit\ZohoCrmApi\Models\Model;
 
-/**
- * Class Module
- * @package Webleit\ZohoCrmApi\Models
- */
 class Module extends Model
 {
-    /**
-     * @return mixed
-     */
-    public function getFields()
+    public function getFields(): Collection
     {
         return $this->getModule()->getFieldsForModule($this);
     }
 
-    /**
-     * @return mixed
-     */
-    public function getRelatedLists()
+    public function getRelatedLists(): Collection
     {
         return $this->getModule()->getRelatedListsForModule($this);
     }
 
-    /**
-     * @return mixed
-     */
-    public function getCustomViews()
+    public function getCustomViews(): Collection
     {
         return $this->getModule()->getCustomViewsForModule($this);
     }
 
-    /**
-     * @return mixed
-     */
-    public function getLayouts()
+    public function getLayouts(): Collection
     {
         return $this->getModule()->getLayoutsForModule($this);
     }
 
-    /**
-     * @return mixed
-     */
-    public function getLayout($id)
+    public function getLayout(string $id): Model
     {
         return $this->getModule()->getLayoutForModule($this, $id);
     }
 
-    /**
-     * @return mixed
-     */
-    public function getCustomView($id)
+    public function getCustomView(string $id): Model
     {
         return $this->getModule()->getCustomViewForModule($this, $id);
     }
