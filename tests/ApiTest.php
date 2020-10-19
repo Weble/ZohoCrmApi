@@ -189,8 +189,8 @@ class ApiTest extends TestCase
     public function canUsePagination()
     {
         $leads = self::$zoho->leads;
-        $leads->getList((new ListParameters())->perPage(10)->toArray());
-        $pagination = $leads->pagination();
+        $list = $leads->getList((new ListParameters())->perPage(10)->toArray());
+        $pagination = $list->pagination();
 
         $this->assertInstanceOf(Pagination::class, $pagination);
         $this->assertEquals(1, $pagination->page());
@@ -297,8 +297,6 @@ class ApiTest extends TestCase
         /** @var Records $leadModule */
         $leadModule = self::$zoho->leads;
         $leads = $leadModule->getList();
-
-        dump($leads->toArray());
 
         $this->assertGreaterThan(0, $leads->count());
     }
