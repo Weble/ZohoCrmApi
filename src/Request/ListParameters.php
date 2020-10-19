@@ -12,7 +12,7 @@ class ListParameters implements Arrayable, Jsonable, JsonSerializable
     protected $params = [
         'fields' => null,
         'ids' => [],
-        'sort_order' => null,s
+        'sort_order' => null,
         'sort_by' => null,
         'converted' => null,
         'approved' => null,
