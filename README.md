@@ -13,48 +13,10 @@ It provides both an interface to ease the interaction with the APIs without both
 composer require webleit/zohocrmapi
 ```
 
-In order to use the library, just require the composer autoload file, and then fire up the library itself.
-In order for the library to work, you need to be authenticated with the zoho crm apis.
+## Documentation
 
-```php
-require './vendor/autoload.php';
+[https://weble.github.io/ZohoCrmApi](https://weble.github.io/ZohoCrmApi)
 
-// setup the generic zoho oath client
-$oAuthClient = new \Weble\ZohoClient\OAuthClient('[CLIENT_ID]', '[CLIENT_SECRET]');
-$oAuthClient->setRefreshToken('[REFRESH_TOKEN]');
-$oAuthClient->setRegion(\Weble\ZohoClient\Enums\Region::us());
-$oAuthClient->useCache($yourPSR6CachePool);
-$oAuthClient->offlineMode();
-
-// setup the zoho crm client
-$client = new \Webleit\ZohoCrmApi\Client($oAuthClient);
-$client->setMode(\Webleit\ZohoCrmApi\Enums\Mode::production()); 
-
-// Create the main class
-$zohoCrm = new \Webleit\ZohoCrmApi\ZohoCrm($client);
-```
-
-## Authentication
-
-See [https://github.com/Weble/ZohoClient](https://github.com/Weble/ZohoClient) for more details on the various authentication types
-
-## Usage
-
-To call any Api, just use the same name reported in the api docs. 
-You can get the list of supported apis using the getAvailableModules() method
-
-#### Example
-
-```php
-$users = $zohoCrm->users->getList();
-$leads = $zohoCrm->leads->getList();
-```
-
-## Return Types
-
-Any "list" api call returns a Collection object, which is taken for Laravel Collection package.
-You can therefore use the result as Collection, which allows mapping, reducing, serializing, etc
-    
 ## Contributing
 
 Finding bugs, sending pull requests or improving the docs - any contribution is welcome and highly appreciated
