@@ -3,7 +3,6 @@
 
 namespace Webleit\ZohoCrmApi;
 
-
 use Illuminate\Support\Collection;
 use Webleit\ZohoCrmApi\Request\Pagination;
 
@@ -17,6 +16,7 @@ class RecordCollection extends Collection
     public function withPagination(Pagination $pagination): self
     {
         $this->pagination = $pagination;
+
         return $this;
     }
 

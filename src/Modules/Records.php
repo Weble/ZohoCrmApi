@@ -2,7 +2,6 @@
 
 namespace Webleit\ZohoCrmApi\Modules;
 
-use Illuminate\Support\Collection;
 use Webleit\ZohoCrmApi\Client;
 use Webleit\ZohoCrmApi\Models\Record;
 use Webleit\ZohoCrmApi\RecordCollection;
