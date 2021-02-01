@@ -2,19 +2,14 @@
 
 namespace Webleit\ZohoCrmApi;
 
-use BenTools\GuzzleHttp\Middleware\Storage\Adapter\ArrayAdapter;
-use BenTools\GuzzleHttp\Middleware\ThrottleConfiguration;
-use BenTools\GuzzleHttp\Middleware\ThrottleMiddleware;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\HandlerStack;
 use Psr\Http\Message\ResponseInterface;
 use Weble\ZohoClient\Enums\Region;
 use Weble\ZohoClient\OAuthClient;
 use Webleit\ZohoCrmApi\Enums\Mode;
 use Webleit\ZohoCrmApi\Exception\ApiError;
 use Webleit\ZohoCrmApi\Request\ListParameters;
-use Webleit\ZohoCrmApi\Request\RequestMatcher;
 
 class Client
 {
@@ -50,7 +45,7 @@ class Client
 
     public function __construct(OAuthClient $oAuthClient, ClientInterface $client = null)
     {
-        if (! $client) {
+        if (!$client) {
             $client = new \GuzzleHttp\Client();
         }
 
@@ -76,31 +71,6 @@ class Client
     public function setOAuthClient(OAuthClient $authClient): self
     {
         $this->oAuthClient = $authClient;
-
-        return $this;
-    }
-
-    public function throttle(int $maxRequests = 0, float $duration = 0): self
-    {
-        $this->throttle = $maxRequests > 0;
-        $this->client = new \GuzzleHttp\Client();
-
-        if ($this->throttle) {
-            $this->enableThrottling($maxRequests, $duration);
-        }
-
-        return $this;
-    }
-
-    protected function enableThrottling(int $maxRequests, float $duration): self
-    {
-        $stack = HandlerStack::create();
-        $middleware = new ThrottleMiddleware(new ArrayAdapter());
-
-        $middleware->registerConfiguration(new ThrottleConfiguration(new RequestMatcher(), $maxRequests, $duration, 'zoho'));
-
-        $stack->push($middleware, 'throttle');
-        $this->client = new \GuzzleHttp\Client(['handler' => $stack]);
 
         return $this;
     }
@@ -143,7 +113,7 @@ class Client
             return $response;
         } catch (ClientException $e) {
             // Retry?
-            if ($e->getCode() === 401 && ! $this->retriedRefresh) {
+            if ($e->getCode() === 401 && !$this->retriedRefresh) {
                 $this->oAuthClient->generateTokens()->getAccessToken();
                 $this->retriedRefresh = true;
 
@@ -152,7 +122,7 @@ class Client
 
             $response = $e->getResponse();
 
-            if (! $response) {
+            if (!$response) {
                 throw $e;
             }
 
@@ -244,7 +214,7 @@ class Client
 
     public function processResult(ResponseInterface $response)
     {
-        if (! $this->isSuccessfulResponse($response)) {
+        if (!$this->isSuccessfulResponse($response)) {
             ApiError::throwFromResponse($response);
         }
 
@@ -254,7 +224,7 @@ class Client
             return $this->getResponseContent($response);
         }
 
-        if (! $result) {
+        if (!$result) {
             return $this->getResponseContent($response);
         }
 
