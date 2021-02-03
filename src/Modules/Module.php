@@ -34,7 +34,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
             throw new InvalidResourceKey(json_encode($list));
         }
 
-        $collection = new RecordCollection($data);
+        $collection = new RecordCollection($data ?? []);
         $collection = $collection->mapWithKeys(function ($item) {
             $item = $this->make($item);
 
