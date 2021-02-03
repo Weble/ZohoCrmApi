@@ -8,3 +8,4 @@ tests/config.json
 .php_cs.cache
 tests/temp/cache
 node_modules
+.phpunit.result.cache
