@@ -26,6 +26,7 @@ class ApiError extends \Exception
     protected const DUPLICATE_DATA = 'DUPLICATE_DATA';
     protected const LIMIT_EXCEEDED = 'LIMIT_EXCEEDED';
     protected const TOO_MANY_REQUESTS = 'TOO_MANY_REQUESTS';
+    protected const INVALID_TOKEN = 'INVALID_TOKEN';
 
     protected $details = [];
 
@@ -57,13 +58,14 @@ class ApiError extends \Exception
         ] = self::getErrorCodeAndDetailsFromResponse($response);
 
 
-        if (! $error) {
+        if (!$error) {
             return;
         }
 
         if (! $code) {
             switch ($response->getStatusCode()) {
                 case 202:
+                case 204:
                     throw new InvalidData($response, $details);
                 case 403:
                     throw new Unauthorized($response, $details);
@@ -108,18 +110,23 @@ class ApiError extends \Exception
             case self::INTERNAL_ERROR:
                 throw new ApiError($response, $details);
             case self::AUTHORIZATION_FAILED:
+            case self::INVALID_TOKEN:
                 throw new AuthFailed($response, $details);
             case self::DUPLICATE_DATA:
                 throw new DuplicateData($response, $details);
             case self::LIMIT_EXCEEDED:
                 throw new LimitExceeded($response, $details);
         }
+
+        if (strlen((string)$response->getBody()) <= 0) {
+            throw new ApiError($response, $details);
+        }
     }
 
     protected static function getErrorCodeAndDetailsFromResponse(ResponseInterface $response): array
     {
         try {
-            $body = json_decode($response->getBody(), true);
+            $body = json_decode((string)$response->getBody(), true);
         } catch (\Exception $e) {
             return [
                 'code' => null,

@@ -50,8 +50,8 @@ class ZohoCrm implements Contracts\ProvidesModules
     }
 
     /**
-     * @throws Exception\ApiError
-     * @throws Exception\GrantCodeNotSetException
+     * @param $name
+     * @return Contracts\Module|Records|null
      */
     public function __get($name)
     {

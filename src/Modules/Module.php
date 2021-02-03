@@ -2,9 +2,10 @@
 
 namespace Webleit\ZohoCrmApi\Modules;
 
-use Doctrine\Common\Inflector\Inflector;
 use Illuminate\Support\Collection;
 use Webleit\ZohoCrmApi\Client;
+use Webleit\ZohoCrmApi\Enums\Trigger;
+use Webleit\ZohoCrmApi\Exception\InvalidResourceKey;
 use Webleit\ZohoCrmApi\Mixins\HasInflector;
 use Webleit\ZohoCrmApi\Models\Model;
 use Webleit\ZohoCrmApi\RecordCollection;
@@ -14,18 +15,10 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
 {
     use HasInflector;
 
-    const RESPONSE_OPTION_PAGINATION_ONLY = 2;
-
-    const TRIGGER_WORKFLOW = 'workflow';
-    const TRIGGER_BLUEPRINT = 'blueprint';
-    const TRIGGER_APPROVAL = 'approval';
-
     /**
      * @var Client
      */
     protected $client;
-
-    protected $pagination;
 
     public function __construct(Client $client)
     {
@@ -36,7 +29,12 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
     {
         $list = $this->client->getList($this->getUrl(), $params);
 
-        $collection = new RecordCollection($list[$this->getResourceKey()]);
+        $data = $list[$this->getResourceKey()] ?? null;
+        if ($data === null) {
+            throw new InvalidResourceKey(json_encode($list));
+        }
+
+        $collection = new RecordCollection($data);
         $collection = $collection->mapWithKeys(function ($item) {
             $item = $this->make($item);
 
@@ -60,22 +58,22 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
     }
 
     public function create(array $data, array $params = [], array $triggers = [
-        self::TRIGGER_APPROVAL,
-        self::TRIGGER_WORKFLOW,
-        self::TRIGGER_BLUEPRINT,
+        Trigger::APPROVAL,
+        Trigger::WORKFLOW,
+        Trigger::BLUEPRINT,
     ]): ?Model
     {
         return $this->createMany([$data], $params, $triggers)->first();
     }
 
     public function createMany($data, $params = [], $triggers = [
-        self::TRIGGER_APPROVAL,
-        self::TRIGGER_WORKFLOW,
-        self::TRIGGER_BLUEPRINT,
+        Trigger::APPROVAL,
+        Trigger::WORKFLOW,
+        Trigger::BLUEPRINT,
     ]): Collection
     {
         $data = [
-            'data' => (array)$data,
+            'data'     => (array)$data,
             'triggers' => $triggers,
         ];
 
@@ -97,15 +95,15 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
     }
 
     public function update(string $id, array $data, array $params = [], array $triggers = [
-        self::TRIGGER_APPROVAL,
-        self::TRIGGER_WORKFLOW,
-        self::TRIGGER_BLUEPRINT,
+        Trigger::APPROVAL,
+        Trigger::WORKFLOW,
+        Trigger::BLUEPRINT,
     ]): Model
     {
         $data['id'] = $id;
 
         $data = [
-            'data' => [$data],
+            'data'     => [$data],
             'triggers' => $triggers,
         ];
 
@@ -116,13 +114,13 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
     }
 
     public function updateMany(array $data, array $params = [], array $triggers = [
-        self::TRIGGER_APPROVAL,
-        self::TRIGGER_WORKFLOW,
-        self::TRIGGER_BLUEPRINT,
+        Trigger::APPROVAL,
+        Trigger::WORKFLOW,
+        Trigger::BLUEPRINT,
     ]): Collection
     {
         $data = [
-            'data' => $data,
+            'data'     => $data,
             'triggers' => $triggers,
         ];
 
@@ -218,15 +216,15 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
 
     protected function getPropertyList(string $property, ?string $id = null, ?string $class = null, ?string $subProperty = null, ?\Webleit\ZohoCrmApi\Contracts\Module $module = null)
     {
-        if (! $class) {
-            $class = $this->getModelClassName() . '\\' . ucfirst(strtolower(Inflector::singularize($property)));
+        if (!$class) {
+            $class = $this->getModelClassName() . '\\' . ucfirst(strtolower($this->inflector()->singularize($property)));
         }
 
-        if (! $module) {
+        if (!$module) {
             $module = $this;
         }
 
-        if (! $subProperty) {
+        if (!$subProperty) {
             $subProperty = $property;
         }
 
@@ -252,7 +250,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
     public function getModelClassName(): string
     {
         $className = (new \ReflectionClass($this))->getShortName();
-        $class = '\\Webleit\\ZohoSignApi\\Models\\' . ucfirst(Inflector::singularize($className));
+        $class = '\\Webleit\\ZohoCrmApi\\Models\\' . ucfirst($this->inflector()->singularize($className));
 
         return $class;
     }

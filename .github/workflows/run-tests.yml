@@ -1,6 +1,14 @@
 name: run-tests
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - develop
+      - master
+  pull_request:
+    branches:
+      - develop
+      - master
 
 jobs:
   test:
@@ -8,9 +16,9 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-latest]
-        php: [7.4, 7.3, 7.2]
-        dependency-version: [prefer-lowest, prefer-stable]
+        os: [ ubuntu-latest ]
+        php: [ 7.4, 7.3, 7.2 ]
+        dependency-version: [ prefer-lowest, prefer-stable ]
 
     name: P${{ matrix.php }} - ${{ matrix.dependency-version }} - ${{ matrix.os }}
 
