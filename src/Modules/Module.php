@@ -74,7 +74,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
     {
         $data = [
             'data'     => (array)$data,
-            'triggers' => $triggers,
+            'trigger' => $triggers,
         ];
 
         $data = $this->client->post($this->getUrl(), $data, $params);
@@ -104,7 +104,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
 
         $data = [
             'data'     => [$data],
-            'triggers' => $triggers,
+            'trigger' => $triggers,
         ];
 
         $data = $this->client->put($this->getUrl(), $data, $params);
@@ -121,7 +121,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
     {
         $data = [
             'data'     => $data,
-            'triggers' => $triggers,
+            'trigger' => $triggers,
         ];
 
         $data = $this->client->put($this->getUrl(), $data, $params);
