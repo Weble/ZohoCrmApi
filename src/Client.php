@@ -77,10 +77,10 @@ class Client
         return $this;
     }
 
-    public function getList(string $uri, array $params = []): array
+    public function getList(string $uri, array $params = [], array $headers = []): array
     {
         $params = new ListParameters($params);
-        $response = $this->call($uri, 'GET', ['query' => $params->toArray()]);
+        $response = $this->call($uri, 'GET', ['query' => $params->toArray(), 'headers' => $headers]);
 
         ApiError::throwFromResponse($response);
 
@@ -97,10 +97,12 @@ class Client
             'query'       => [],
             'form_params' => [],
             'json'        => [],
-            'headers'     => [
-                'Authorization' => 'Zoho-oauthtoken ' . $this->oAuthClient->getAccessToken(),
-            ],
         ], $data);
+
+        $options['headers'] = array_merge($data['headers'] ?? [], [
+            'Authorization' =>
+            'Zoho-oauthtoken ' . $this->oAuthClient->getAccessToken(),
+        ]);
 
         try {
             $response = $this->client->$method($this->getUrl() . $uri, array_filter($options));
@@ -165,7 +167,6 @@ class Client
             default:
                 return '.com';
         }
-
     }
 
     public function getUrl(): string

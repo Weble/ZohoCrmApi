@@ -25,9 +25,9 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
         $this->client = $client;
     }
 
-    public function getList(array $params = []): RecordCollection
+    public function getList(array $params = [], array $headers = []): RecordCollection
     {
-        $list = $this->client->getList($this->getUrl(), $params);
+        $list = $this->client->getList($this->getUrl(), $params, $headers);
 
         $data = $list[$this->getResourceKey()] ?? null;
         if ($data === null) {
