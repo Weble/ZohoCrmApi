@@ -64,15 +64,9 @@ class ZohoCrm implements Contracts\ProvidesModules
         return $this->createRecordsModule($name);
     }
 
-    public function createRecordsModule(string $name): ?Records
+    public function createRecordsModule(string $name): Records
     {
-        $modules = $this->getApiModules();
-        if ($modules->has($name)) {
-            /** @var Records $recordsModule */
-            return new Records($this->getClient(), $name);
-        }
-
-        return null;
+        return new Records($this->getClient(), $name);
     }
 
     public function getApiModules(): Collection
