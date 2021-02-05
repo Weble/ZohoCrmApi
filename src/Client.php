@@ -9,6 +9,7 @@ use Weble\ZohoClient\Enums\Region;
 use Weble\ZohoClient\OAuthClient;
 use Webleit\ZohoCrmApi\Enums\Mode;
 use Webleit\ZohoCrmApi\Exception\ApiError;
+use Webleit\ZohoCrmApi\Request\ListHeaders;
 use Webleit\ZohoCrmApi\Request\ListParameters;
 
 class Client
@@ -40,7 +41,7 @@ class Client
 
     public function __construct(OAuthClient $oAuthClient, ClientInterface $client = null)
     {
-        if (!$client) {
+        if (! $client) {
             $client = new \GuzzleHttp\Client();
         }
 
@@ -77,10 +78,39 @@ class Client
         return $this;
     }
 
-    public function getList(string $uri, array $params = [], array $headers = []): array
+    /**
+     * @param string $uri
+     * @param array|ListParameters $params
+     * @param array|ListHeaders $headers
+     * @return array
+     * @throws ApiError
+     * @throws Exception\AuthFailed
+     * @throws Exception\DuplicateData
+     * @throws Exception\InvalidData
+     * @throws Exception\InvalidDataFormat
+     * @throws Exception\InvalidDataType
+     * @throws Exception\InvalidModule
+     * @throws Exception\InvalidUrlPattern
+     * @throws Exception\LimitExceeded
+     * @throws Exception\MandatoryDataNotFound
+     * @throws Exception\MethodNotAllowed
+     * @throws Exception\OAuthScopeMismatch
+     * @throws Exception\RequestEntityTooLarge
+     * @throws Exception\TooManyRequests
+     * @throws Exception\Unauthorized
+     * @throws Exception\UnsupportedMediaType
+     */
+    public function getList(string $uri, $params = [], $headers = []): array
     {
-        $params = new ListParameters($params);
-        $response = $this->call($uri, 'GET', ['query' => $params->toArray(), 'headers' => $headers]);
+        if (! $params instanceof ListParameters) {
+            $params = new ListParameters($params);
+        }
+
+        if (! $headers instanceof ListHeaders) {
+            $headers = new ListHeaders($params);
+        }
+
+        $response = $this->call($uri, 'GET', ['query' => $params->toArray(), 'headers' => $headers->toArray()]);
 
         ApiError::throwFromResponse($response);
 
@@ -94,9 +124,9 @@ class Client
     public function call(string $uri, string $method, array $data = []): ResponseInterface
     {
         $options = array_merge([
-            'query'       => [],
+            'query' => [],
             'form_params' => [],
-            'json'        => [],
+            'json' => [],
         ], $data);
 
         $options['headers'] = array_merge($data['headers'] ?? [], [
@@ -112,7 +142,7 @@ class Client
             return $response;
         } catch (ClientException $e) {
             // Retry?
-            if ($e->getCode() === 401 && !$this->retriedRefresh) {
+            if ($e->getCode() === 401 && ! $this->retriedRefresh) {
                 $this->oAuthClient->getAccessToken();
                 $this->retriedRefresh = true;
 
@@ -121,7 +151,7 @@ class Client
 
             $response = $e->getResponse();
 
-            if (!$response) {
+            if (! $response) {
                 throw $e;
             }
 
@@ -206,7 +236,7 @@ class Client
     {
         return $this->processResult($this->call($url, 'POST', [
             'query' => $queryParams,
-            'json'  => $params,
+            'json' => $params,
         ]));
     }
 
@@ -214,7 +244,7 @@ class Client
     {
         return $this->processResult($this->call($url, 'PUT', [
             'query' => $queryParams,
-            'json'  => $params,
+            'json' => $params,
         ]));
     }
 
@@ -250,7 +280,7 @@ class Client
      */
     public function processResult(ResponseInterface $response)
     {
-        if (!$this->isSuccessfulResponse($response)) {
+        if (! $this->isSuccessfulResponse($response)) {
             ApiError::throwFromResponse($response);
         }
 
@@ -260,7 +290,7 @@ class Client
             return $this->getResponseContent($response);
         }
 
-        if (!$result) {
+        if (! $result) {
             return $this->getResponseContent($response);
         }
 

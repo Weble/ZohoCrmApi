@@ -3,7 +3,6 @@
 
 namespace Webleit\ZohoCrmApi\Enums;
 
-
 abstract class Trigger
 {
     public const WORKFLOW = 'workflow';

@@ -9,3 +9,4 @@ tests/config.json
 tests/temp/cache
 node_modules
 .phpunit.result.cache
+composer.lock

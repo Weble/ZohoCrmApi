@@ -25,7 +25,7 @@ class Users extends Module
     public function ofType(string $type): Collection
     {
         return $this->getList([
-            'type' => $type
+            'type' => $type,
         ]);
     }
 

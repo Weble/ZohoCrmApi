@@ -73,7 +73,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
     ]): Collection
     {
         $data = [
-            'data'     => (array)$data,
+            'data' => (array)$data,
             'trigger' => $triggers,
         ];
 
@@ -103,7 +103,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
         $data['id'] = $id;
 
         $data = [
-            'data'     => [$data],
+            'data' => [$data],
             'trigger' => $triggers,
         ];
 
@@ -120,7 +120,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
     ]): Collection
     {
         $data = [
-            'data'     => $data,
+            'data' => $data,
             'trigger' => $triggers,
         ];
 
@@ -216,15 +216,15 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
 
     protected function getPropertyList(string $property, ?string $id = null, ?string $class = null, ?string $subProperty = null, ?\Webleit\ZohoCrmApi\Contracts\Module $module = null)
     {
-        if (!$class) {
+        if (! $class) {
             $class = $this->getModelClassName() . '\\' . ucfirst(strtolower($this->inflector()->singularize($property)));
         }
 
-        if (!$module) {
+        if (! $module) {
             $module = $this;
         }
 
-        if (!$subProperty) {
+        if (! $subProperty) {
             $subProperty = $property;
         }
 

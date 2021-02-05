@@ -58,7 +58,7 @@ class ApiError extends \Exception
         ] = self::getErrorCodeAndDetailsFromResponse($response);
 
 
-        if (!$error) {
+        if (! $error) {
             return;
         }
 
