@@ -107,7 +107,7 @@ class Client
         }
 
         if (! $headers instanceof ListHeaders) {
-            $headers = new ListHeaders($params);
+            $headers = new ListHeaders($headers);
         }
 
         $response = $this->call($uri, 'GET', ['query' => $params->toArray(), 'headers' => $headers->toArray()]);

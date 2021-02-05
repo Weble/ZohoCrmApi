@@ -3,6 +3,8 @@
 namespace Webleit\ZohoCrmApi\Test;
 
 use Cache\Adapter\Filesystem\FilesystemCachePool;
+use GuzzleHttp\HandlerStack;
+use GuzzleRetry\GuzzleRetryMiddleware;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
 use PHPUnit\Framework\TestCase;
@@ -41,7 +43,11 @@ class ApiTest extends TestCase
 
         $oAuthClient = self::createOAuthClient();
 
-        $client = new Client($oAuthClient);
+        $stack = HandlerStack::create();
+        $stack->push(GuzzleRetryMiddleware::factory());
+        $guzzle = new \GuzzleHttp\Client(['handler' => $stack]);
+
+        $client = new Client($oAuthClient, $guzzle);
         $client->setMode($auth->mode ?? Mode::SANDBOX);
 
         self::$client = $client;
