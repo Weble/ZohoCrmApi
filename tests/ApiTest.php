@@ -263,6 +263,8 @@ class ApiTest extends TestCase
             'Email' => 'test@example.com',
         ]);
 
+        $this->assertNotNull($lead);
+
         $lead = $leadModule->get($lead->getId());
 
         $response = $lead->uploadPhoto('logo.png', file_get_contents(__DIR__ . '/temp/zoho-logo-512px.png'));
