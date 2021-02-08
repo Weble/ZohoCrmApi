@@ -81,6 +81,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
         ];
 
         $error = null;
+
         try {
             $data = $this->client->post($this->getUrl(), $data, $params);
         } catch (ApiError $e) {
@@ -100,7 +101,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
             $results[] = $item;
         }
 
-        if (!count($results) && $error) {
+        if (! count($results) && $error) {
             throw $error;
         }
 
@@ -138,6 +139,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
         ];
 
         $error = null;
+
         try {
             $data = $this->client->put($this->getUrl(), $data, $params);
         } catch (ApiError $e) {
@@ -153,7 +155,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
             $items[] = $item;
         }
 
-        if (!count($items) && $error) {
+        if (! count($items) && $error) {
             throw $error;
         }
 
