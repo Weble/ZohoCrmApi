@@ -147,7 +147,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
         $items = [];
         foreach ($data['data'] ?? [] as $row) {
             $item = $row;
-            if ($row['code'] == 'SUCCESS') {
+            if (($row['code'] ?? '') == 'SUCCESS') {
                 $item = $this->make($row['details']);
             }
             $items[] = $item;
