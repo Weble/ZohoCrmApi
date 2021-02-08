@@ -5,6 +5,7 @@ namespace Webleit\ZohoCrmApi\Modules;
 use Doctrine\Common\Inflector\Inflector;
 use Illuminate\Support\Collection;
 use Webleit\ZohoCrmApi\Client;
+use Webleit\ZohoCrmApi\Exception\ApiError;
 use Webleit\ZohoCrmApi\Mixins\HasInflector;
 use Webleit\ZohoCrmApi\Models\Model;
 use Webleit\ZohoCrmApi\RecordCollection;
@@ -79,7 +80,13 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
             'triggers' => $triggers,
         ];
 
-        $data = $this->client->post($this->getUrl(), $data, $params);
+        $error = null;
+        try {
+            $data = $this->client->post($this->getUrl(), $data, $params);
+        } catch (ApiError $e) {
+            $error = $e;
+        }
+
         $data = $data['data'] ?? [];
 
         $results = [];
@@ -91,6 +98,10 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
             }
 
             $results[] = $item;
+        }
+
+        if (!count($results) && $error) {
+            throw $error;
         }
 
         return collect($results);
@@ -126,7 +137,13 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
             'triggers' => $triggers,
         ];
 
-        $data = $this->client->put($this->getUrl(), $data, $params);
+        $error = null;
+        try {
+            $data = $this->client->put($this->getUrl(), $data, $params);
+        } catch (ApiError $e) {
+            $error = $e;
+        }
+
         $items = [];
         foreach ($data['data'] ?? [] as $row) {
             $item = $row;
@@ -134,6 +151,10 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
                 $item = $this->make($row['details']);
             }
             $items[] = $item;
+        }
+
+        if (!count($items) && $error) {
+            throw $error;
         }
 
         return collect($items);
