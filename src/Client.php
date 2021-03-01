@@ -143,7 +143,7 @@ class Client
         } catch (ClientException $e) {
             // Retry?
             if ($e->getCode() === 401 && ! $this->retriedRefresh) {
-                $this->oAuthClient->getAccessToken();
+                $this->oAuthClient->refreshAccessToken();
                 $this->retriedRefresh = true;
 
                 return $this->call($uri, $method, $data);
