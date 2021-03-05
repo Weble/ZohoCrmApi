@@ -15,7 +15,7 @@
         "illuminate/collections": "^8.0",
         "psr/cache": "^1.0",
         "doctrine/inflector": "^2.0",
-        "weble/zohoclient": "v4.x-dev",
+        "weble/zohoclient": "^4.1",
         "ext-json": "*"
     },
     "require-dev": {
