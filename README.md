@@ -17,6 +17,10 @@ composer require webleit/zohocrmapi
 
 [https://weble.github.io/ZohoCrmApi](https://weble.github.io/ZohoCrmApi)
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md)
+
 ## Contributing
 
 Finding bugs, sending pull requests or improving the docs - any contribution is welcome and highly appreciated

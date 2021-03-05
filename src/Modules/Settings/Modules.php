@@ -22,7 +22,7 @@ class Modules extends Module
     public function getRelatedListsForModule($module)
     {
         if ($module instanceof \Webleit\ZohoCrmApi\Models\Settings\Module) {
-            $module = $module->module_name;
+            $module = $module->api_name;
         }
 
         $fieldsModule = new RelatedLists($this->getClient());
@@ -41,7 +41,7 @@ class Modules extends Module
     public function getCustomViewsForModule($module)
     {
         if ($module instanceof \Webleit\ZohoCrmApi\Models\Settings\Module) {
-            $module = $module->module_name;
+            $module = $module->api_name;
         }
 
         $fieldsModule = new CustomViews($this->getClient());
@@ -58,7 +58,7 @@ class Modules extends Module
     public function getFieldsForModule($module): Collection
     {
         if ($module instanceof \Webleit\ZohoCrmApi\Models\Settings\Module) {
-            $module = $module->module_name;
+            $module = $module->api_name;
         }
 
         $fieldsModule = new Fields($this->getClient());
@@ -79,7 +79,7 @@ class Modules extends Module
     public function getLayoutsForModule($module): Collection
     {
         if ($module instanceof \Webleit\ZohoCrmApi\Models\Settings\Module) {
-            $module = $module->module_name;
+            $module = $module->api_name;
         }
 
         $fieldsModule = new Layouts($this->getClient());
@@ -97,7 +97,7 @@ class Modules extends Module
     public function getLayoutForModule($module, string $id)
     {
         if ($module instanceof \Webleit\ZohoCrmApi\Models\Settings\Module) {
-            $module = $module->module_name;
+            $module = $module->api_name;
         }
 
         $fieldsModule = new Layouts($this->getClient());
@@ -115,7 +115,7 @@ class Modules extends Module
     public function getCustomViewForModule($module, string $id): Model
     {
         if ($module instanceof \Webleit\ZohoCrmApi\Models\Settings\Module) {
-            $module = $module->module_name;
+            $module = $module->api_name;
         }
 
         $fieldsModule = new CustomViews($this->getClient());
@@ -133,7 +133,7 @@ class Modules extends Module
     public function get($module, array $params = []): Model
     {
         if ($module instanceof \Webleit\ZohoCrmApi\Models\Settings\Module) {
-            $module = $module->module_name;
+            $module = $module->api_name;
         }
 
         return parent::get($module, $params);

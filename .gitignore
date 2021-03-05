@@ -5,5 +5,8 @@ test.php
 tests/config.json
 .env
 .phpunit.result.cache
+.php_cs.cache
 tests/temp/cache
 node_modules
+.phpunit.result.cache
+composer.lock
