@@ -22,15 +22,15 @@ class Users extends Module
         return User::class;
     }
 
-    public function ofType(UserType $type): Collection
+    public function ofType(string $type): Collection
     {
         return $this->getList([
-            'type' => $type->getValue(),
+            'type' => $type,
         ]);
     }
 
     public function current(): User
     {
-        return $this->ofType(UserType::current())->first();
+        return $this->ofType(UserType::CURRENT)->first();
     }
 }
