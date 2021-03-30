@@ -45,6 +45,11 @@ abstract class Model implements \Webleit\ZohoCrmApi\Contracts\Model
     {
         $this->data[$name] = $value;
     }
+    
+    function __isset($name)
+    {
+        return isset($this->data[$name]);
+    }
 
     public function __call($name, $arguments)
     {
