@@ -161,8 +161,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
 
     public function getRelatedRecords(string $recordId, string $relationName): array
     {
-        $items = $this->client->get($this->getUrl() . '/' . $recordId . '/' . $relationName);
-        return $items ? $items : [];
+        return $this->client->get($this->getUrl() . '/' . $recordId . '/' . $relationName) ?? [];
     }
 
     public function getUrlPath(): string
