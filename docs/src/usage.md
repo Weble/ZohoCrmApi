@@ -227,6 +227,42 @@ $zohoCrm = new \Webleit\ZohoCrmApi\Client($oAuthClient);
 $zohoCrm->leads->getRelatedRecords('[ID OF THE RECORD', '[NAME OF THE RELATION]');
 ```
 
+## List and Download attachments
+
+You can list and download the attachments of a record.
+
+```php
+$zohoCrm = new \Webleit\ZohoCrmApi\Client($oAuthClient);
+$lead = $zohoCrm->leads->get('[ID OF THE RECORD]');
+$attachments = $lead->attachments();
+
+$file = fopen('/path/to/file', 'w');
+$lead->downloadAttachment($attachments->first()->getId(), $file);
+```
+
+## Upload attachment / photo
+
+You can upload attachments to a record.
+
+```php
+$zohoCrm = new \Webleit\ZohoCrmApi\Client($oAuthClient);
+$lead = $zohoCrm->leads->get('[ID OF THE RECORD]');
+
+$file = fopen('/path/to/file', 'w');
+$lead->uploadAttachment('File Name', $file);
+$lead->uploadPhoto('Photo Name', $file);
+```
+
+## List Notes
+
+You can list the notes of a record.
+
+```php
+$zohoCrm = new \Webleit\ZohoCrmApi\Client($oAuthClient);
+$lead = $zohoCrm->leads->get('[ID OF THE RECORD]');
+$notes = $lead->notes();
+```
+
 ## Update a related record
 
 ```php
