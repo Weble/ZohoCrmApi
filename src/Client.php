@@ -19,6 +19,8 @@ class Client
     protected const ZOHOCRM_API_DEVELOPER_PARTIAL_HOST = "https://developer.zoho";
     protected const ZOHOCRM_API_SANDBOX_PARTIAL_HOST = "https://crmsandbox.zoho";
 
+    public const SUCCESS_CODE = 'SUCCESS';
+
     /**
      * @var bool
      */
