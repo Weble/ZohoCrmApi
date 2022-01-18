@@ -109,7 +109,7 @@ class ListParameters implements Arrayable, Jsonable, JsonSerializable
 
     public function page(int $page): self
     {
-        $this->params['page'] = min(1, $page);
+        $this->params['page'] = max(1, $page);
 
         return $this;
     }
