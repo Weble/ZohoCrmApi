@@ -63,10 +63,10 @@ class Records extends Module
         return $this->search($criteria, 'word');
     }
 
-    public function uploadPhoto($leadId, string $fileName, $fileContents): bool
+    public function uploadPhoto(string $recordId, string $fileName, $fileContents): bool
     {
         $result = $this->client->processResult(
-            $this->client->call($this->getUrl() . '/' . $leadId . '/photo', 'post', [
+            $this->client->call($this->getUrl() . '/' . $recordId . '/photo', 'post', [
                 'multipart' => [
                     [
                         'name' => 'file',
@@ -77,7 +77,31 @@ class Records extends Module
             ])
         );
 
-        return (($result['code'] ?? '') === 'SUCCESS');
+        return (($result['code'] ?? '') === Client::SUCCESS_CODE);
+    }
+
+    public function uploadAttachment(string $recordId, string $fileName, $fileContents): bool
+    {
+        $result = $this->client->processResult(
+            $this->client->call($this->getUrl() . '/' . $recordId . '/Attachments', 'post', [
+                'multipart' => [
+                    [
+                        'name' => 'file',
+                        'contents' => $fileContents,
+                        'filename' => $fileName,
+                    ],
+                ],
+            ])
+        );
+
+        return (($result['code'] ?? '') === Client::SUCCESS_CODE);
+    }
+
+    public function downloadAttachment(string $recordId, string $attachmentId, $resource): void
+    {
+        $this->client->call($this->getUrl() . '/' . $recordId . '/Attachments/' . $attachmentId, 'get', [
+            'sink' => $resource
+        ]);
     }
 
     public function getModuleName(): string

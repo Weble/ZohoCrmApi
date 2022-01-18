@@ -84,7 +84,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
         foreach ($data as $row) {
             $item = $row;
 
-            if (($row['code'] ?? '') == 'SUCCESS') {
+            if (($row['code'] ?? '') === Client::SUCCESS_CODE) {
                 $item = $this->make($row['details'] ?? []);
             }
 
@@ -128,7 +128,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
         $items = [];
         foreach ($data['data'] ?? [] as $row) {
             $item = $row;
-            if ($row['code'] == 'SUCCESS') {
+            if ($row['code'] === Client::SUCCESS_CODE) {
                 $item = $this->make($row['details']);
             }
             $items[] = $item;
@@ -161,7 +161,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
 
     public function getRelatedRecords(string $recordId, string $relationName): array
     {
-        return $this->client->get($this->getUrl() . '/' . $recordId . '/' . $relationName);
+        return $this->client->get($this->getUrl() . '/' . $recordId . '/' . $relationName) ?? [];
     }
 
     public function getUrlPath(): string
@@ -207,6 +207,30 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
         $this->client->post($this->getUrl() . '/' . $id . '/' . $key . '/' . $status);
 
         return true;
+    }
+
+    public function notes(string $id, array $params = []): RecordCollection
+    {
+        return $this->getRelatedResources('Notes', $id, $params);
+    }
+
+    public function attachments(string $id, array $params = []): RecordCollection
+    {
+        return $this->getRelatedResources('Attachments', $id, $params);
+    }
+
+    public function getRelatedResources(string $resource, string $id, array $params = []): RecordCollection
+    {
+        $data = $this->client->getList($this->getUrl() . '/' . $id . '/' . $resource, $params);
+
+        $collection = new RecordCollection($data['data'] ?? []);
+        $collection = $collection->mapWithKeys(function ($item) {
+            $item = $this->make($item);
+
+            return [$item->getId() => $item];
+        });
+
+        return $collection->withPagination(new Pagination($list['info'] ?? []));
     }
 
     public function doAction(string $id, string $action, array $data = [], array $params = []): array
