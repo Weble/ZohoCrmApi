@@ -34,9 +34,10 @@ class Records extends Module
         return $this->search($criteria, 'criteria');
     }
 
-    public function search(string $criteria, string $key = 'criteria'): RecordCollection
+    public function search(string $criteria, string $key = 'criteria', array $params = []): RecordCollection
     {
-        $list = $this->client->getList($this->getUrl() . '/search', [$key => $criteria]);
+        $params = array_merge($params, [$key => $criteria]);
+        $list = $this->client->getList($this->getUrl() . '/search', $params);
 
         $collection = new RecordCollection($list[$this->getResourceKey()] ?? []);
         $collection = $collection->mapWithKeys(function ($item) {
@@ -48,19 +49,19 @@ class Records extends Module
         return $collection;
     }
 
-    public function searchEmail(string $criteria): RecordCollection
+    public function searchEmail(string $criteria, array $params = []): RecordCollection
     {
-        return $this->search($criteria, 'email');
+        return $this->search($criteria, 'email', $params);
     }
 
-    public function searchPhone(string $criteria): RecordCollection
+    public function searchPhone(string $criteria, array $params = []): RecordCollection
     {
-        return $this->search($criteria, 'phone');
+        return $this->search($criteria, 'phone', $params);
     }
 
-    public function searchWord(string $criteria): RecordCollection
+    public function searchWord(string $criteria, array $params = []): RecordCollection
     {
-        return $this->search($criteria, 'word');
+        return $this->search($criteria, 'word', $params);
     }
 
     public function uploadPhoto(string $recordId, string $fileName, $fileContents): bool
