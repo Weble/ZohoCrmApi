@@ -3,6 +3,7 @@
 namespace Webleit\ZohoCrmApi\Modules;
 
 use Webleit\ZohoCrmApi\Client;
+use Webleit\ZohoCrmApi\Models\Model;
 use Webleit\ZohoCrmApi\Models\Record;
 use Webleit\ZohoCrmApi\RecordCollection;
 
@@ -27,6 +28,24 @@ class Records extends Module
         }
 
         $this->module = $module;
+    }
+
+    public function get(string $id, array $params = [], ?string $externalField = null): Model
+    {
+        $options = [];
+        if ($externalField !== null) {
+            $options['headers'] = [
+                "X-EXTERNAL" => $this->getModuleName() . "." . $externalField
+            ];
+        }
+
+        $item = $this->client->get($this->getUrl(), $id, $params, $options);
+
+        $items = $item[$this->getResourceKey()] ?? [];
+
+        $data = array_shift($items);
+
+        return $this->make($data ?: []);
     }
 
     public function searchRaw(string $criteria): RecordCollection

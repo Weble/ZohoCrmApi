@@ -14,7 +14,7 @@ use Webleit\ZohoCrmApi\Request\ListParameters;
 
 class Client
 {
-    protected const ZOHOCRM_API_URL_PATH = "/crm/v2/";
+    protected const ZOHOCRM_API_URL_PATH = "/crm/v4/";
     protected const ZOHOCRM_API_PRODUCION_PARTIAL_HOST = "https://www.zohoapis";
     protected const ZOHOCRM_API_DEVELOPER_PARTIAL_HOST = "https://developer.zoho";
     protected const ZOHOCRM_API_SANDBOX_PARTIAL_HOST = "https://crmsandbox.zoho";
@@ -132,8 +132,7 @@ class Client
         ], $data);
 
         $options['headers'] = array_merge($data['headers'] ?? [], [
-            'Authorization' =>
-            'Zoho-oauthtoken ' . $this->oAuthClient->getAccessToken(),
+            'Authorization' => 'Zoho-oauthtoken ' . $this->oAuthClient->getAccessToken(),
         ]);
 
         try {
@@ -223,13 +222,14 @@ class Client
         return $this->oAuthClient->getRegion();
     }
 
-    public function get(string $url, string $id = null, array $params = [])
+    public function get(string $url, string $id = null, array $params = [], array $options = [])
     {
         if ($id !== null) {
             $url .= '/' . $id;
         }
 
-        $result = $this->call($url, 'GET', ['query' => $params]);
+        $options['query'] = array_merge($options['query'] ?? [], $params);
+        $result = $this->call($url, 'GET', $options);
 
         return $this->processResult($result);
     }
