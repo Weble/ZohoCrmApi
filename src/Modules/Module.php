@@ -230,7 +230,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
             return [$item->getId() => $item];
         });
 
-        return $collection->withPagination(new Pagination($list['info'] ?? []));
+        return $collection->withPagination(new Pagination($data['info'] ?? []));
     }
 
     public function doAction(string $id, string $action, array $data = [], array $params = []): array
