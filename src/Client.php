@@ -2,6 +2,7 @@
 
 namespace Webleit\ZohoCrmApi;
 
+use Closure;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
 use Psr\Http\Message\ResponseInterface;
@@ -21,27 +22,13 @@ class Client
 
     public const SUCCESS_CODE = 'SUCCESS';
 
-    /**
-     * @var bool
-     */
-    protected $retriedRefresh = false;
+    protected bool $retriedRefresh = false;
+    protected ClientInterface $client;
+    protected OAuthClient $oAuthClient;
 
-    /**
-     * @var \GuzzleHttp\Client
-     */
-    protected $client;
+    protected string $mode;
 
-    /**
-     * @var OAuthClient
-     */
-    protected $oAuthClient;
-
-    /**
-     * @var string
-     */
-    protected $mode;
-
-    public function __construct(OAuthClient $oAuthClient, ClientInterface $client = null)
+    public function __construct(OAuthClient $oAuthClient, ?ClientInterface $client = null, string $mode = Mode::PRODUCTION)
     {
         if (! $client) {
             $client = new \GuzzleHttp\Client();
@@ -50,15 +37,21 @@ class Client
         $this->client = $client;
         $this->oAuthClient = $oAuthClient;
 
-        $this->setMode(Mode::PRODUCTION);
+        $this->setMode($mode);
     }
 
-    public function __call($name, $arguments)
+    /**
+     * @param string $name
+     * @param array<string|int,mixed> $arguments
+     */
+    public function __call(string $name, array $arguments): mixed
     {
-        return call_user_func_array([
+        /** @var Closure $callback */
+        $callback = [
             $this->oAuthClient,
             $name,
-        ], $arguments);
+        ];
+        return call_user_func_array($callback, $arguments);
     }
 
     public function getOAuthClient(): OAuthClient
@@ -82,27 +75,11 @@ class Client
 
     /**
      * @param string $uri
-     * @param array|ListParameters $params
-     * @param array|ListHeaders $headers
-     * @return array
-     * @throws ApiError
-     * @throws Exception\AuthFailed
-     * @throws Exception\DuplicateData
-     * @throws Exception\InvalidData
-     * @throws Exception\InvalidDataFormat
-     * @throws Exception\InvalidDataType
-     * @throws Exception\InvalidModule
-     * @throws Exception\InvalidUrlPattern
-     * @throws Exception\LimitExceeded
-     * @throws Exception\MandatoryDataNotFound
-     * @throws Exception\MethodNotAllowed
-     * @throws Exception\OAuthScopeMismatch
-     * @throws Exception\RequestEntityTooLarge
-     * @throws Exception\TooManyRequests
-     * @throws Exception\Unauthorized
-     * @throws Exception\UnsupportedMediaType
+     * @param array<string,mixed>|ListParameters $params
+     * @param array<string,mixed>|ListHeaders $headers
+     * @return array<string|int,mixed>
      */
-    public function getList(string $uri, $params = [], $headers = []): array
+    public function getList(string $uri, array|ListParameters $params = [], array|ListHeaders $headers = []): array
     {
         if (! $params instanceof ListParameters) {
             $params = new ListParameters($params);
@@ -123,6 +100,9 @@ class Client
         return $data ?? [];
     }
 
+    /**
+     * @param array<string|int,mixed> $data
+     */
     public function call(string $uri, string $method, array $data = []): ResponseInterface
     {
         $options = array_merge([
@@ -151,10 +131,6 @@ class Client
             }
 
             $response = $e->getResponse();
-
-            if (! $response) {
-                throw $e;
-            }
 
             ApiError::throwFromResponse($response);
 
@@ -222,7 +198,12 @@ class Client
         return $this->oAuthClient->getRegion();
     }
 
-    public function get(string $url, string $id = null, array $params = [], array $options = [])
+    /**
+     * @param array<string|int,mixed> $params
+     * @param array<string|int,mixed> $options
+     * @return array<string|int,mixed>|string
+     */
+    public function get(string $url, string $id = null, array $params = [], array $options = []): array|string
     {
         if ($id !== null) {
             $url .= '/' . $id;
@@ -234,7 +215,12 @@ class Client
         return $this->processResult($result);
     }
 
-    public function post(string $url, array $params = [], array $queryParams = [])
+    /**
+     * @param array<string|int,mixed> $params
+     * @param array<string|int,mixed> $queryParams
+     * @return array<string|int,mixed>|string
+     */
+    public function post(string $url, array $params = [], array $queryParams = []): array|string
     {
         return $this->processResult($this->call($url, 'POST', [
             'query' => $queryParams,
@@ -242,7 +228,12 @@ class Client
         ]));
     }
 
-    public function put(string $url, array $params = [], array $queryParams = [])
+    /**
+     * @param array<string|int,mixed> $params
+     * @param array<string|int,mixed> $queryParams
+     * @return array<string|int,mixed>|string
+     */
+    public function put(string $url, array $params = [], array $queryParams = []): array|string
     {
         return $this->processResult($this->call($url, 'PUT', [
             'query' => $queryParams,
@@ -250,35 +241,22 @@ class Client
         ]));
     }
 
-    public function delete(string $url, $id)
+    /**
+     * @return array<string|int,mixed>|string
+     */
+    public function delete(string $url, string $id): array|string
     {
         return $this->processResult($this->call($url . '/' . $id, 'DELETE'));
     }
 
-    public function getHttpClient(): \GuzzleHttp\Client
+    public function getHttpClient(): ClientInterface
     {
         return $this->client;
     }
 
     /**
      * @param ResponseInterface $response
-     * @return array|string
-     * @throws ApiError
-     * @throws Exception\AuthFailed
-     * @throws Exception\DuplicateData
-     * @throws Exception\InvalidData
-     * @throws Exception\InvalidDataFormat
-     * @throws Exception\InvalidDataType
-     * @throws Exception\InvalidModule
-     * @throws Exception\InvalidUrlPattern
-     * @throws Exception\LimitExceeded
-     * @throws Exception\MandatoryDataNotFound
-     * @throws Exception\MethodNotAllowed
-     * @throws Exception\OAuthScopeMismatch
-     * @throws Exception\RequestEntityTooLarge
-     * @throws Exception\TooManyRequests
-     * @throws Exception\Unauthorized
-     * @throws Exception\UnsupportedMediaType
+     * @return array<int|string,mixed>|string
      */
     public function processResult(ResponseInterface $response)
     {

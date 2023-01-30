@@ -9,7 +9,10 @@ use JsonSerializable;
 
 class ListParameters implements Arrayable, Jsonable, JsonSerializable
 {
-    protected $params = [
+    /**
+     * @var array<string,mixed>
+     */
+    protected array $params = [
         'fields' => null,
         'ids' => [],
         'sort_order' => null,
@@ -23,6 +26,9 @@ class ListParameters implements Arrayable, Jsonable, JsonSerializable
         'include_child' => null,
     ];
 
+    /**
+     * @param array<string,mixed> $params
+     */
     public function __construct(array $params = [])
     {
         foreach ($params as $key => $value) {
@@ -30,6 +36,9 @@ class ListParameters implements Arrayable, Jsonable, JsonSerializable
         }
     }
 
+    /**
+     * @param string[] $fields
+     */
     public function fields(array $fields): self
     {
         $this->params['fields'] = implode(",", $fields);
@@ -37,6 +46,10 @@ class ListParameters implements Arrayable, Jsonable, JsonSerializable
         return $this;
     }
 
+    /**
+     * @param string[] $ids
+     * @return $this
+     */
     public function ids(array $ids): self
     {
         $this->params['ids'] = implode(",", $ids);
@@ -154,16 +167,22 @@ class ListParameters implements Arrayable, Jsonable, JsonSerializable
         return array_filter($this->params);
     }
 
-    public function toJson($options = 0): string
+    public function toJson($options = 0): string|false
     {
         return json_encode($options);
     }
 
+    /**
+     * @return array<string,mixed>
+     */
     public function jsonSerialize(): array
     {
         return $this->toArray();
     }
 
+    /**
+     * @return array<string,mixed>
+     */
     public function __toArray(): array
     {
         return $this->toArray();

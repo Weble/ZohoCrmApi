@@ -2,10 +2,11 @@
 
 namespace Webleit\ZohoCrmApi\Modules\Settings;
 
-use Illuminate\Support\Collection;
 use Webleit\ZohoCrmApi\Exception\NonExistingModule;
 use Webleit\ZohoCrmApi\Models\Model;
+use Webleit\ZohoCrmApi\Models\Record;
 use Webleit\ZohoCrmApi\Modules\Module;
+use Webleit\ZohoCrmApi\RecordCollection;
 
 /**
  * Class Taxes
@@ -13,13 +14,7 @@ use Webleit\ZohoCrmApi\Modules\Module;
  */
 class Modules extends Module
 {
-    /**
-     * @param $module
-     * @return \Illuminate\Support\Collection|static
-     * @throws \Webleit\ZohoCrmApi\Exception\ApiError
-     * @throws \Webleit\ZohoCrmApi\Exception\GrantCodeNotSetException
-     */
-    public function getRelatedListsForModule($module)
+    public function getRelatedListsForModule(\Webleit\ZohoCrmApi\Models\Settings\Module|string $module): RecordCollection
     {
         if ($module instanceof \Webleit\ZohoCrmApi\Models\Settings\Module) {
             $module = $module->api_name;
@@ -32,13 +27,7 @@ class Modules extends Module
         ]);
     }
 
-    /**
-     * @param $module
-     * @return \Illuminate\Support\Collection|static
-     * @throws \Webleit\ZohoCrmApi\Exception\ApiError
-     * @throws \Webleit\ZohoCrmApi\Exception\GrantCodeNotSetException
-     */
-    public function getCustomViewsForModule($module)
+    public function getCustomViewsForModule(\Webleit\ZohoCrmApi\Models\Settings\Module|string $module): RecordCollection
     {
         if ($module instanceof \Webleit\ZohoCrmApi\Models\Settings\Module) {
             $module = $module->api_name;
@@ -51,11 +40,7 @@ class Modules extends Module
         ]);
     }
 
-    /**
-     * @param string|Module $module
-     * @return Collection
-     */
-    public function getFieldsForModule($module): Collection
+    public function getFieldsForModule(\Webleit\ZohoCrmApi\Models\Settings\Module|string $module): RecordCollection
     {
         if ($module instanceof \Webleit\ZohoCrmApi\Models\Settings\Module) {
             $module = $module->api_name;
@@ -68,15 +53,11 @@ class Modules extends Module
                 'module' => $module,
             ]);
         } catch (NonExistingModule $e) {
-            return collect([]);
+            return new RecordCollection([]);
         }
     }
 
-    /**
-     * @param string|Module $module
-     * @return Collection
-     */
-    public function getLayoutsForModule($module): Collection
+    public function getLayoutsForModule(\Webleit\ZohoCrmApi\Models\Settings\Module|string $module): RecordCollection
     {
         if ($module instanceof \Webleit\ZohoCrmApi\Models\Settings\Module) {
             $module = $module->api_name;
@@ -89,12 +70,7 @@ class Modules extends Module
         ]);
     }
 
-    /**
-     * @param string|Module $module
-     * @param string $id
-     * @return mixed|string|\Webleit\ZohoCrmApi\Models\Model
-     */
-    public function getLayoutForModule($module, string $id)
+    public function getLayoutForModule(\Webleit\ZohoCrmApi\Models\Settings\Module|string $module, string $id): Model
     {
         if ($module instanceof \Webleit\ZohoCrmApi\Models\Settings\Module) {
             $module = $module->api_name;
@@ -107,12 +83,7 @@ class Modules extends Module
         ]);
     }
 
-    /**
-     * @param string|Module $module
-     * @param string $id
-     * @return Model
-     */
-    public function getCustomViewForModule($module, string $id): Model
+    public function getCustomViewForModule(\Webleit\ZohoCrmApi\Models\Settings\Module|string $module, string $id): Model
     {
         if ($module instanceof \Webleit\ZohoCrmApi\Models\Settings\Module) {
             $module = $module->api_name;
@@ -126,17 +97,17 @@ class Modules extends Module
     }
 
     /**
-     * @param string|Module $module
-     * @param array $params
+     * @param \Webleit\ZohoCrmApi\Models\Settings\Module|string $id
+     * @param array<string,mixed> $params
      * @return Model
      */
-    public function get($module, array $params = []): Model
+    public function get(\Webleit\ZohoCrmApi\Models\Settings\Module|string $id, array $params = []): Model
     {
-        if ($module instanceof \Webleit\ZohoCrmApi\Models\Settings\Module) {
-            $module = $module->api_name;
+        if ($id instanceof \Webleit\ZohoCrmApi\Models\Settings\Module) {
+            $id = $id->api_name;
         }
 
-        return parent::get($module, $params);
+        return parent::get($id, $params);
     }
 
     public function getUrlPath(): string

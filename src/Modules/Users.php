@@ -2,6 +2,7 @@
 
 namespace Webleit\ZohoCrmApi\Modules;
 
+use Exception;
 use Illuminate\Support\Collection;
 use Webleit\ZohoCrmApi\Enums\UserType;
 use Webleit\ZohoCrmApi\Models\User;
@@ -31,6 +32,13 @@ class Users extends Module
 
     public function current(): User
     {
-        return $this->ofType(UserType::CURRENT)->first();
+        $users = $this->ofType(UserType::CURRENT);
+        if ($users->isEmpty()) {
+            throw new Exception("No user found");
+        }
+
+        /** @var User $user */
+        $user = $users->first();
+        return $user;
     }
 }

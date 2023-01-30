@@ -408,7 +408,7 @@ class ApiTest extends TestCase
         $user = self::$zoho->users->current();
         $this->assertNotNull($user);
 
-        $users = self::$zoho->users->ofType(UserType::current());
+        $users = self::$zoho->users->ofType(UserType::CURRENT);
         $this->assertTrue($users->contains($user));
     }
 

@@ -8,10 +8,8 @@ use Doctrine\Inflector\InflectorFactory;
 
 trait HasInflector
 {
-    /**
-     * @var \Doctrine\Inflector\Inflector
-     */
-    protected $inflector = null;
+
+    protected ?Inflector $inflector = null;
 
     public function inflector(): Inflector
     {

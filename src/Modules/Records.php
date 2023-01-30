@@ -19,7 +19,7 @@ class Records extends Module
      * @param Client $client
      * @param string $module
      */
-    public function __construct(Client $client, $module = '')
+    public function __construct(Client $client, \Webleit\ZohoCrmApi\Models\Settings\Module|string $module = '')
     {
         parent::__construct($client);
 
@@ -30,6 +30,9 @@ class Records extends Module
         $this->module = $module;
     }
 
+    /**
+     * @param array<string,mixed> $params
+     */
     public function get(string $id, array $params = [], ?string $externalField = null): Model
     {
         $options = [];
@@ -40,9 +43,14 @@ class Records extends Module
         }
 
         $item = $this->client->get($this->getUrl(), $id, $params, $options);
+        if (!is_array($item)) {
+            return $this->make();
+        }
 
+        /** @var array<int,array<string,mixed>> $items */
         $items = $item[$this->getResourceKey()] ?? [];
 
+        /** @var array<string,mixed> $data */
         $data = array_shift($items);
 
         return $this->make($data ?: []);
@@ -53,43 +61,64 @@ class Records extends Module
         return $this->search($criteria, 'criteria');
     }
 
+    /**
+     * @param array<string,mixed> $params
+     */
     public function search(string $criteria, string $key = 'criteria', array $params = []): RecordCollection
     {
         $params = array_merge($params, [$key => $criteria]);
         $list = $this->client->getList($this->getUrl() . '/search', $params);
+        if (!is_array($list)) {
+            return new RecordCollection([]);
+        }
 
-        $collection = new RecordCollection($list[$this->getResourceKey()] ?? []);
-        $collection = $collection->mapWithKeys(function ($item) {
-            $item = $this->make($item);
+        /** @var array<int,array<string|int,mixed>> $items */
+        $items = $list[$this->getResourceKey()] ?? [];
 
-            return [$item->getId() => $item];
-        });
+        /** @var RecordCollection<string,Record> $collection */
+        $collection = (new RecordCollection($items))
+            ->mapWithKeys(function ($data) {
+                /** @var array<int|string,mixed> $data */
+
+                $item = $this->make($data);
+
+                return [$item->getId() => $item];
+            });
 
         return $collection;
     }
 
+    /**
+     * @param array<string,mixed> $params
+     */
     public function searchEmail(string $criteria, array $params = []): RecordCollection
     {
         return $this->search($criteria, 'email', $params);
     }
 
+    /**
+     * @param array<string,mixed> $params
+     */
     public function searchPhone(string $criteria, array $params = []): RecordCollection
     {
         return $this->search($criteria, 'phone', $params);
     }
 
+    /**
+     * @param array<string,mixed> $params
+     */
     public function searchWord(string $criteria, array $params = []): RecordCollection
     {
         return $this->search($criteria, 'word', $params);
     }
 
-    public function uploadPhoto(string $recordId, string $fileName, $fileContents): bool
+    public function uploadPhoto(string $recordId, string $fileName, string $fileContents): bool
     {
         $result = $this->client->processResult(
             $this->client->call($this->getUrl() . '/' . $recordId . '/photo', 'post', [
                 'multipart' => [
                     [
-                        'name' => 'file',
+                        'name'     => 'file',
                         'contents' => $fileContents,
                         'filename' => $fileName,
                     ],
@@ -100,13 +129,13 @@ class Records extends Module
         return (($result['code'] ?? '') === Client::SUCCESS_CODE);
     }
 
-    public function uploadAttachment(string $recordId, string $fileName, $fileContents): bool
+    public function uploadAttachment(string $recordId, string $fileName, string $fileContents): bool
     {
         $result = $this->client->processResult(
             $this->client->call($this->getUrl() . '/' . $recordId . '/Attachments', 'post', [
                 'multipart' => [
                     [
-                        'name' => 'file',
+                        'name'     => 'file',
                         'contents' => $fileContents,
                         'filename' => $fileName,
                     ],
@@ -117,7 +146,7 @@ class Records extends Module
         return (($result['code'] ?? '') === Client::SUCCESS_CODE);
     }
 
-    public function downloadAttachment(string $recordId, string $attachmentId, $resource): void
+    public function downloadAttachment(string $recordId, string $attachmentId, string $resource): void
     {
         $this->client->call($this->getUrl() . '/' . $recordId . '/Attachments/' . $attachmentId, 'get', [
             'sink' => $resource

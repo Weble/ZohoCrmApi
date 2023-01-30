@@ -10,6 +10,9 @@ interface Model extends Arrayable, Jsonable, JsonSerializable
 {
     public function getModule(): Module;
 
+    /**
+     * @return array<string,mixed>
+     */
     public function getData(): array;
 
     public function isNew(): bool;

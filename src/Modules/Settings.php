@@ -19,15 +19,12 @@ class Settings implements \Webleit\ZohoCrmApi\Contracts\ProvidesModules, \Weblei
 {
     use ProvidesModules;
 
-    /**
-     * @var Client
-     */
-    protected $client;
+    protected Client $client;
 
     /**
-     * @var array
+     * @var array<string,class-string>
      */
-    protected $availableModules = [
+    protected array $availableModules = [
         'modules' => Settings\Modules::class,
         'roles' => Settings\Roles::class,
         'profiles' => Settings\Profiles::class,
@@ -42,7 +39,7 @@ class Settings implements \Webleit\ZohoCrmApi\Contracts\ProvidesModules, \Weblei
         $this->client = $client;
     }
 
-    public function __get($name)
+    public function __get(string $name): ?\Webleit\ZohoCrmApi\Contracts\Module
     {
         return $this->createModule($name);
     }

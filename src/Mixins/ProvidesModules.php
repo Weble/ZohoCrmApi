@@ -12,7 +12,9 @@ trait ProvidesModules
         if ($this->getAvailableModules()->has($name)) {
             $class = $this->getAvailableModules()->get($name);
 
-            return new $class($this->client);
+            /** @var Module $module */
+            $module = new $class($this->client);
+            return $module;
         }
 
         return null;

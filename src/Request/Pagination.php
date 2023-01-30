@@ -5,11 +5,14 @@ namespace Webleit\ZohoCrmApi\Request;
 
 class Pagination
 {
-    protected $perPage = 200;
-    protected $page = 1;
-    protected $count = 0;
-    protected $moreRecords = false;
+    protected int $perPage = 200;
+    protected int $page = 1;
+    protected int $count = 0;
+    protected bool $moreRecords = false;
 
+    /**
+     * @param array{"per_page"?: int, "page"?: int, "count"?: int, "more_records"?: bool} $params
+     */
     public function __construct(array $params = [])
     {
         $this->perPage = $params['per_page'] ?? $this->perPage;

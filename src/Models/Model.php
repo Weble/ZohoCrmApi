@@ -13,16 +13,13 @@ abstract class Model implements \Webleit\ZohoCrmApi\Contracts\Model
 {
     use HasInflector;
 
-    /**
-     * @var array
-     */
-    protected $data = [];
+    /** @var array<string,mixed>  */
+    protected array $data = [];
+    protected Module $module;
 
     /**
-     * @var Module
+     * @param array<string,mixed> $data
      */
-    protected $module;
-
     public function __construct(array $data, Module $module)
     {
         $this->data = $data;
@@ -34,51 +31,64 @@ abstract class Model implements \Webleit\ZohoCrmApi\Contracts\Model
         return $this->module;
     }
 
-    public function __get($name)
+    /** @phpstan-ignore-next-line */
+    public function __get(string $name)
     {
         if (isset($this->data[$name])) {
             return $this->data[$name];
         }
     }
 
-    public function __set($name, $value)
+    public function __set(string $name, mixed $value): void
     {
         $this->data[$name] = $value;
     }
-    
-    function __isset($name)
+
+    function __isset(string $name): bool
     {
         return isset($this->data[$name]);
     }
 
-    public function __call($name, $arguments)
+    /** @phpstan-ignore-next-line */
+    public function __call(string $name, array $arguments)
     {
         // add "id" as a parameter
         array_unshift($arguments, $this->getId());
 
         if (method_exists($this->module, $name)) {
-            return call_user_func_array([
+            /** @var callable $callback */
+            $callback = [
                 $this->module,
                 $name,
-            ], $arguments);
+            ];
+            return call_user_func_array($callback, $arguments);
         }
     }
 
+    /**
+     * @return array<string,mixed>
+     */
     public function getData(): array
     {
         return $this->data;
     }
 
-    public function toArray()
+    /**
+     * @return array<string,mixed>
+     */
+    public function toArray(): array
     {
         return $this->getData();
     }
 
-    public function toJson($options = 0): string
+    public function toJson($options = 0): string|false
     {
         return json_encode($this->toArray(), $options);
     }
 
+    /**
+     * @return array<string,mixed>
+     */
     public function jsonSerialize(): array
     {
         return $this->toArray();
