@@ -143,7 +143,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
 
         $data = $this->client->put($this->getUrl(), $data, $params);
         $data = $data['data'] ?? [];
-        $row = array_shift($data['data']);
+        $row = array_shift($data);
 
         return $this->make($row['details']);
     }

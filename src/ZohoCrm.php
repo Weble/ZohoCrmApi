@@ -39,16 +39,16 @@ class ZohoCrm implements Contracts\ProvidesModules
         $this->client = $client;
     }
 
-    public function __get(string $name): ?Records
+    public function __get(string $name): ?Modules\Module
     {
-        /** @var Records|null $module */
+        /** @var Module|null $module */
         $module = $this->createModule($name);
 
         if (!$module) {
             $module = $this->createRecordsModule($name);
         }
 
-        /** @var Records|null $module */
+        /** @var Module|null $module */
         return $module;
     }
 
