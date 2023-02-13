@@ -111,13 +111,13 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
 
         $results = [];
         foreach ($data as $row) {
-            $item = $row;
 
-            if (($row['code'] ?? '') === Client::SUCCESS_CODE) {
-                $item = $this->make($row['details'] ?? []);
+            if (($row['code'] ?? '') !== Client::SUCCESS_CODE) {
+                throw new \Exception(json_encode($row), $row['code'] ?? 500);
+
             }
 
-            $results[] = $item;
+            $results[] = $this->make($row['details'] ?? []);
         }
 
         return collect($results);
