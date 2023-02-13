@@ -21,6 +21,9 @@ class Org extends Module
         return \Webleit\ZohoCrmApi\Models\Org::class;
     }
 
+    /**
+     * @param array<string,mixed> $params
+     */
     public function get(string $id, array $params = []): Model
     {
         $item = $this->client->get($this->getUrl());
@@ -29,7 +32,11 @@ class Org extends Module
             return $this->make([]);
         }
 
-        $data = array_shift($item[$this->getResourceKey()]);
+        /** @var array<int|string,array<int|string,mixed>> $item */
+        $item = $item[$this->getResourceKey()];
+
+        /** @var array<int|string,mixed> $data */
+        $data = array_shift($item);
 
         return $this->make($data);
     }

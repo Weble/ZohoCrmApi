@@ -8,10 +8,7 @@ use Webleit\ZohoCrmApi\Request\Pagination;
 
 class RecordCollection extends Collection
 {
-    /**
-     * @var null|Pagination
-     */
-    protected $pagination;
+    protected ?Pagination $pagination = null;
 
     public function withPagination(Pagination $pagination): self
     {
@@ -20,7 +17,7 @@ class RecordCollection extends Collection
         return $this;
     }
 
-    public function pagination(): Pagination
+    public function pagination(): ?Pagination
     {
         return $this->pagination;
     }

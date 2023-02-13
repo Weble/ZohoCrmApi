@@ -2,6 +2,7 @@
 
 namespace Webleit\ZohoCrmApi\Exception;
 
+use Illuminate\Support\Collection;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -10,8 +11,7 @@ use Psr\Http\Message\ResponseInterface;
  */
 class ApiError extends \Exception
 {
-    /** @var ResponseInterface */
-    protected $response;
+    protected ResponseInterface $response;
 
     // Error Codes
     protected const INVALID_MODULE = 'INVALID_MODULE';
@@ -28,8 +28,14 @@ class ApiError extends \Exception
     protected const TOO_MANY_REQUESTS = 'TOO_MANY_REQUESTS';
     protected const INVALID_TOKEN = 'INVALID_TOKEN';
 
-    protected $details = [];
+    /**
+     * @var array<string,mixed>
+     */
+    protected array $details = [];
 
+    /**
+     * @param array<string,mixed> $details
+     */
     public function __construct(ResponseInterface $response, array $details = [])
     {
         parent::__construct($response->getReasonPhrase(), $response->getStatusCode());
@@ -38,6 +44,9 @@ class ApiError extends \Exception
         $this->details = $details;
     }
 
+    /**
+     * @return array<string,mixed>
+     */
     public function details(): array
     {
         return $this->details;
@@ -123,6 +132,9 @@ class ApiError extends \Exception
         }
     }
 
+    /**
+     * @return array<string,mixed>
+     */
     protected static function getErrorCodeAndDetailsFromResponse(ResponseInterface $response): array
     {
         try {
@@ -156,6 +168,7 @@ class ApiError extends \Exception
             ];
         }
 
+        /** @phpstan-ignore-next-line  $body */
         $body = collect($body);
 
         return [

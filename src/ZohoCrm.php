@@ -18,50 +18,38 @@ class ZohoCrm implements Contracts\ProvidesModules
 {
     use ProvidesModules;
 
-    /**
-     * @var Client
-     */
-    protected $client;
+    protected Client $client;
 
     /**
-     * @var array
+     * @var class-string[]
      */
-    protected $totals = [];
-
-    /**
-     * @var array
-     */
-    protected $availableModules = [
+    protected array $availableModules = [
         'settings' => Modules\Settings::class,
         'users' => Modules\Users::class,
         'org' => Modules\Org::class,
-        'records' => Records::class,
+        'records' => \Webleit\ZohoCrmApi\Modules\Records::class,
         'leads' => Modules\Leads::class,
     ];
 
-    /**
-     * @var Collection
-     */
-    protected $apiModules;
+    /** @var Collection<string,Module>|null  */
+    protected ?Collection $apiModules;
 
     public function __construct(Client $client)
     {
         $this->client = $client;
     }
 
-    /**
-     * @param $name
-     * @return Contracts\Module|Records|null
-     */
-    public function __get($name)
+    public function __get(string $name): ?Modules\Module
     {
+        /** @var Module|null $module */
         $module = $this->createModule($name);
 
-        if ($module) {
-            return $module;
+        if (!$module) {
+            $module = $this->createRecordsModule($name);
         }
 
-        return $this->createRecordsModule($name);
+        /** @var Module|null $module */
+        return $module;
     }
 
     public function createRecordsModule(string $name): Records
@@ -69,11 +57,16 @@ class ZohoCrm implements Contracts\ProvidesModules
         return new Records($this->getClient(), $name);
     }
 
+    /**
+     * @return Collection<string,Module>
+     * @throws Exception\InvalidResourceKey
+     */
     public function getApiModules(): Collection
     {
         if (! $this->apiModules) {
-            $this->apiModules = $this->settings->modules->getList()->mapWithKeys(function (Module $module) {
-                return collect([strtolower($module->api_name) => $module]);
+            $this->apiModules = $this->settings->modules->getList()->mapWithKeys(function ($module) {
+                /** @var Module $module */
+                return [strtolower($module->api_name) => $module];
             });
         }
 
