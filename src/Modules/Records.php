@@ -5,6 +5,7 @@ namespace Webleit\ZohoCrmApi\Modules;
 use Webleit\ZohoCrmApi\Client;
 use Webleit\ZohoCrmApi\Models\Record;
 use Webleit\ZohoCrmApi\RecordCollection;
+use Webleit\ZohoCrmApi\Request\Pagination;
 
 class Records extends Module
 {
@@ -45,6 +46,7 @@ class Records extends Module
 
             return [$item->getId() => $item];
         });
+        $collection->withPagination(new Pagination($list['info'] ?? []));
 
         return $collection;
     }
