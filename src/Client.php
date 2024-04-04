@@ -195,6 +195,8 @@ class Client
                 return '.in';
             case Region::CN:
                 return '.com.cn';
+            case Region::SA:
+                return '.sa';
             case Region::US:
             default:
                 return '.com';
