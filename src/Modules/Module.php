@@ -113,7 +113,7 @@ abstract class Module implements \Webleit\ZohoCrmApi\Contracts\Module
         foreach ($data as $row) {
 
             if (($row['code'] ?? '') !== Client::SUCCESS_CODE) {
-                throw new \Exception(json_encode($row), $row['code'] ?? 500);
+                throw new \Exception(json_encode($row), 500);
 
             }
 
